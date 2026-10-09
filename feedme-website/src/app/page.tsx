@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 export default function LandingPage() {
   const [scaleSimWeight, setScaleSimWeight] = useState(240);
-  const webAppUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:8081';
+  const webAppUrl = process.env.NEXT_PUBLIC_APP_URL || '/dashboard';
 
   return (
     <div className="min-h-screen bg-[#111110] text-[#F5F0E8] font-sans selection:bg-[#8FB89A]/20 selection:text-[#F5F0E8]">
@@ -29,15 +29,13 @@ export default function LandingPage() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <a
+            <Link
               href={webAppUrl}
-              target="_blank"
-              rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[#8FB89A] text-[#0f1a10] hover:bg-[#a1cca9] transition-all shadow-[0_0_20px_rgba(143,184,154,0.2)]"
             >
               Launch Web App
-              <span className="text-[10px]">↗</span>
-            </a>
+              <span className="text-[10px]">→</span>
+            </Link>
           </div>
         </div>
       </header>
@@ -68,15 +66,13 @@ export default function LandingPage() {
 
             {/* Hero CTAs */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-              <a
+              <Link
                 href={webAppUrl}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="w-full sm:w-auto px-8 py-3.5 rounded-xl font-medium text-sm bg-[#8FB89A] text-[#0f1a10] hover:bg-[#a1cca9] transition-all shadow-lg flex items-center justify-center gap-2"
               >
-                <span>เปิดใช้งาน Web App (Expo Web)</span>
+                <span>เปิดใช้งาน Web App</span>
                 <span>→</span>
-              </a>
+              </Link>
 
               <a
                 href="#features"
@@ -298,14 +294,12 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a
+            <Link
               href={webAppUrl}
-              target="_blank"
-              rel="noopener noreferrer"
               className="px-8 py-3.5 rounded-xl font-semibold text-sm bg-[#8FB89A] text-[#0f1a10] hover:bg-[#a1cca9] transition-all shadow-xl"
             >
-              เปิดใช้งาน Web App (http://localhost:8081) →
-            </a>
+              เข้าใช้งาน Web App ทันที →
+            </Link>
           </div>
         </div>
       </section>
@@ -320,9 +314,9 @@ export default function LandingPage() {
           </div>
 
           <div className="flex items-center gap-6 text-[#9E9890]">
-            <a href="file:///c:/Users/poate/OneDrive/เอกสาร/FeedMe/FeedMe.md" className="hover:text-white">Spec</a>
-            <a href="file:///c:/Users/poate/OneDrive/เอกสาร/FeedMe/ARCHITECTURE.md" className="hover:text-white">Architecture</a>
-            <a href="file:///c:/Users/poate/OneDrive/เอกสาร/FeedMe/PRE_LAUNCH_CHECKLIST.md" className="hover:text-white">Checklist</a>
+            <a href="https://github.com/poatelol-afk/FeedMe/blob/main/FeedMe.md" target="_blank" rel="noopener noreferrer" className="hover:text-white">Spec</a>
+            <a href="https://github.com/poatelol-afk/FeedMe/blob/main/ARCHITECTURE.md" target="_blank" rel="noopener noreferrer" className="hover:text-white">Architecture</a>
+            <a href="https://github.com/poatelol-afk/FeedMe/blob/main/PRE_LAUNCH_CHECKLIST.md" target="_blank" rel="noopener noreferrer" className="hover:text-white">Checklist</a>
           </div>
         </div>
       </footer>
