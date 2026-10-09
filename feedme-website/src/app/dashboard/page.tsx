@@ -13,7 +13,7 @@ import NutritionCharts from '@/components/dashboard/NutritionCharts';
 import Link from 'next/link';
 
 export default function DashboardPage() {
-  const { goal, diary, workouts, calorieTrend, coins, streak, quests, loading, deleteFood, water } = useAppState();
+  const { goal, diary, workouts, calorieTrend, coins, streak, quests, loading, deleteFood, waterToday } = useAppState();
   const totals = getTodayTotals(diary);
   const totalBurnedToday = workouts.reduce((s, w) => s + (w.caloriesBurned || 0), 0);
 
@@ -85,8 +85,8 @@ export default function DashboardPage() {
           goalCalories={effectiveGoal.tdee}
           proteinGrams={totals.protein}
           targetProteinGrams={effectiveGoal.protein.g}
-          waterMl={water}
-          streakDays={streak}
+          waterMl={waterToday}
+          streakDays={streak?.current ?? 0}
         />
 
         {/* 2. Net Calorie Summary (True Net Energy Balance) */}
