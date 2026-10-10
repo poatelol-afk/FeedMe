@@ -23,7 +23,7 @@ const PRESET_FOODS: FoodPreset[] = [
 ];
 
 export default function LandingPage() {
-  const webAppUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:8081';
+  const webAppUrl = process.env.NEXT_PUBLIC_APP_URL || '/dashboard';
 
   // Interactive Playground State
   const [selectedFood, setSelectedFood] = useState<FoodPreset>(PRESET_FOODS[0]);
