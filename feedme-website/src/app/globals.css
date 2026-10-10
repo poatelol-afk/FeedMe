@@ -1,45 +1,53 @@
 @import "tailwindcss";
 
-/* ─── Design Tokens (CSS Custom Properties) ──────────
-   Health-forward minimalist palette
-   Inspired by: Oura Ring, Whoop, Apple Fitness+
-───────────────────────────────────────────────────── */
+/* ─── Duolingo Design Tokens (Khalidabdi1/design-ai Spec) ──
+   Playful learning with high-energy brand character:
+   White canvas & light-gray surfaces, vivid green anchors,
+   3D pressed depth, bold rounded typography, and habit loops.
+───────────────────────────────────────────────────────────── */
 @layer base {
   :root {
-    --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-sans: "Nunito", "din-round", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
-    /* Backgrounds — warm dark, not cold black */
-    --bg-base:      #111110;
-    --bg-surface:   #1A1917;
-    --bg-elevated:  #221F1C;
-    --bg-overlay:   #2A2622;
+    /* Core Foundation */
+    --duo-green:        #58CC02;
+    --duo-green-deep:   #46A302;
+    --duo-green-soft:   #D7FFB8;
+    --duo-white:        #FFFFFF;
+    --duo-surface:      #F7F7F7;
 
-    /* Borders */
-    --border-soft:  rgba(255, 248, 240, 0.06);
-    --border-mid:   rgba(255, 248, 240, 0.10);
-    --border-strong:rgba(255, 248, 240, 0.18);
+    /* Support Palette */
+    --duo-ink:          #4B4B4B;
+    --duo-muted:        #777777;
+    --duo-blue:         #1CB0F6;
+    --duo-blue-deep:    #1899D6;
+    --duo-yellow:       #FFD900;
+    --duo-yellow-deep:  #CCA000;
+    --duo-red:          #FF4B4B;
+    --duo-red-deep:     #D92B2B;
 
-    /* Text */
-    --text-primary:   #F5F0E8;
-    --text-secondary: #9E9890;
-    --text-muted:     #5C5850;
+    /* Utility & Structure */
+    --duo-border:       #E5E5E5;
+    --duo-shadow:       #D7D7D7;
+    --duo-focus:        #84D8FF;
+    --duo-purple:       #CE82FF;
+    --duo-purple-deep:  #A559D9;
 
-    /* Accent — sage green */
-    --accent:       #8FB89A;
-    --accent-soft:  rgba(143, 184, 154, 0.12);
-    --accent-glow:  rgba(143, 184, 154, 0.06);
-
-    /* Coin — warm gold */
-    --gold:         #C9A96E;
-    --gold-soft:    rgba(201, 169, 110, 0.12);
-
-    /* Macros */
-    --macro-protein: #7EB8D4;
-    --macro-carbs:   #8FB89A;
-    --macro-fat:     #D4A96A;
-
-    /* Danger */
-    --danger:       #C97B7B;
+    /* Legacy compatibility mappings for internal views */
+    --bg-base:          #F7F7F7;
+    --bg-surface:       #FFFFFF;
+    --bg-elevated:      #F0F0F0;
+    --text-primary:     #4B4B4B;
+    --text-secondary:   #777777;
+    --text-muted:       #999999;
+    --border-soft:      #E5E5E5;
+    --border-mid:       #D7D7D7;
+    --accent:           #58CC02;
+    --accent-soft:      #D7FFB8;
+    --gold:             #FFD900;
+    --macro-protein:    #1CB0F6;
+    --macro-carbs:      #FFD900;
+    --macro-fat:        #FF9600;
   }
 
   *,
@@ -50,20 +58,21 @@
   }
 
   html {
-    background-color: #111110;
+    background-color: #F7F7F7;
+    color: #4B4B4B;
+    font-family: var(--font-sans);
   }
 
   body {
-    background-color: #111110;
-    background-color: var(--bg-base);
-    color: #F5F0E8;
-    color: var(--text-primary);
+    background-color: #F7F7F7;
+    color: #4B4B4B;
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
   }
 
-  /* Number input: hide arrows */
+  /* Number input: hide spin arrows */
   input[type="number"]::-webkit-inner-spin-button,
   input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
@@ -73,217 +82,228 @@
     -moz-appearance: textfield;
   }
 
-  /* Selection color */
+  /* Selection highlight */
   ::selection {
-    background-color: rgba(143, 184, 154, 0.25);
-    color: #F5F0E8;
+    background-color: #D7FFB8;
+    color: #111111;
   }
 }
 
-/* ─── Utility Classes ────────────────────────────── */
+/* ─── Duolingo 3D Button & Card Components ───────────────── */
 @layer utilities {
 
-  /* ── Scrollbar ── */
-  .scrollbar-none::-webkit-scrollbar { display: none; }
-  .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
-  .scrollbar-thin::-webkit-scrollbar { width: 2px; }
-  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: rgba(255, 248, 240, 0.10);
-    border-radius: 999px;
-  }
-
-  /* ── Typography ── */
-  .text-label {
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.1em;
+  /* Primary Duolingo 3D Green Button */
+  .btn-duo-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background-color: #58CC02;
+    color: #FFFFFF;
+    border: none;
+    border-bottom: 4px solid #46A302;
+    border-radius: 16px;
+    min-height: 48px;
+    padding: 0 24px;
+    font-size: 15px;
+    font-weight: 800;
     text-transform: uppercase;
-    color: var(--text-muted);
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    user-select: none;
+    transition: filter 0.15s ease, transform 0.1s ease;
+  }
+  .btn-duo-primary:hover {
+    filter: brightness(1.04);
+  }
+  .btn-duo-primary:active {
+    transform: translateY(2px);
+    border-bottom-width: 2px;
   }
 
-  .text-body {
-    font-size: 0.875rem;
-    font-weight: 400;
-    line-height: 1.5;
-    color: var(--text-secondary);
+  /* Secondary Duolingo 3D White Button */
+  .btn-duo-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background-color: #FFFFFF;
+    color: #58CC02;
+    border: 2px solid #E5E5E5;
+    border-bottom: 4px solid #D7D7D7;
+    border-radius: 16px;
+    min-height: 48px;
+    padding: 0 24px;
+    font-size: 15px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+  }
+  .btn-duo-secondary:hover {
+    background-color: #F7F7F7;
+  }
+  .btn-duo-secondary:active {
+    transform: translateY(2px);
+    border-bottom-width: 2px;
   }
 
-  /* ── Layout ── */
-  .divider {
-    height: 1px;
-    background: var(--border-soft);
-    margin: 4px 0;
+  /* Blue Duolingo 3D Button (Actions / XP) */
+  .btn-duo-blue {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background-color: #1CB0F6;
+    color: #FFFFFF;
+    border: none;
+    border-bottom: 4px solid #1899D6;
+    border-radius: 16px;
+    min-height: 48px;
+    padding: 0 24px;
+    font-size: 15px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    user-select: none;
+    transition: filter 0.15s ease, transform 0.1s ease;
+  }
+  .btn-duo-blue:hover {
+    filter: brightness(1.04);
+  }
+  .btn-duo-blue:active {
+    transform: translateY(2px);
+    border-bottom-width: 2px;
   }
 
-  /* ── Progress ── */
-  .progress-track {
-    height: 3px;
-    background: var(--border-soft);
-    border-radius: 999px;
-    overflow: hidden;
+  /* Yellow / Gold Duolingo 3D Button (Reward / Streak) */
+  .btn-duo-yellow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background-color: #FFD900;
+    color: #553A00;
+    border: none;
+    border-bottom: 4px solid #CCA000;
+    border-radius: 16px;
+    min-height: 48px;
+    padding: 0 24px;
+    font-size: 15px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    user-select: none;
+    transition: filter 0.15s ease, transform 0.1s ease;
+  }
+  .btn-duo-yellow:hover {
+    filter: brightness(1.04);
+  }
+  .btn-duo-yellow:active {
+    transform: translateY(2px);
+    border-bottom-width: 2px;
   }
 
-  .progress-fill {
-    height: 100%;
-    border-radius: 999px;
-    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Duolingo 3D Card (Cartoon-Physical Depth) */
+  .card-duo-3d {
+    background-color: #FFFFFF;
+    border: 2px solid #E5E5E5;
+    border-bottom: 4px solid #D7D7D7;
+    border-radius: 24px;
+    padding: 24px;
+    transition: transform 0.15s ease, border-color 0.15s ease;
   }
 
-  /* ── Badges ── */
-  .badge-accent {
-    background: var(--accent-soft);
-    color: var(--accent);
-    border: 1px solid rgba(143, 184, 154, 0.2);
-    border-radius: 999px;
-    padding: 3px 10px;
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.03em;
+  /* Interactive pill buttons */
+  .chip-duo-3d {
+    background-color: #FFFFFF;
+    border: 2px solid #E5E5E5;
+    border-bottom: 3px solid #D7D7D7;
+    border-radius: 12px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #4B4B4B;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.1s ease;
+  }
+  .chip-duo-3d:active {
+    transform: translateY(1px);
+    border-bottom-width: 2px;
+  }
+  .chip-duo-3d-active {
+    background-color: #D7FFB8;
+    border-color: #58CC02;
+    border-bottom-color: #46A302;
+    color: #235800;
   }
 
-  .badge-gold {
-    background: var(--gold-soft);
-    color: var(--gold);
-    border: 1px solid rgba(201, 169, 110, 0.2);
-    border-radius: 999px;
-    padding: 3px 10px;
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.03em;
+  /* Speech bubble styling for FitOwl mascot */
+  .duo-speech-bubble {
+    position: relative;
+    background: #FFFFFF;
+    border: 2px solid #E5E5E5;
+    border-radius: 20px;
+    padding: 12px 18px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #4B4B4B;
+    box-shadow: 0 4px 0 #D7D7D7;
+  }
+  .duo-speech-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 28px;
+    border-width: 10px 10px 0;
+    border-style: solid;
+    border-color: #FFFFFF transparent;
+    display: block;
+    width: 0;
+  }
+  .duo-speech-bubble::before {
+    content: '';
+    position: absolute;
+    bottom: -13px;
+    left: 26px;
+    border-width: 12px 12px 0;
+    border-style: solid;
+    border-color: #E5E5E5 transparent;
+    display: block;
+    width: 0;
   }
 
-  /* ── Cards ── */
+  /* Legacy utility fallbacks */
   .card {
-    background: var(--bg-surface);
-    border: 1px solid var(--border-soft);
+    background: #FFFFFF;
+    border: 2px solid #E5E5E5;
+    border-bottom: 4px solid #D7D7D7;
     border-radius: 20px;
     padding: 20px;
   }
-
-  /* ── Buttons ── */
   .btn-primary {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    background: var(--accent);
-    color: #111110;
+    gap: 8px;
+    background-color: #58CC02;
+    color: #FFFFFF;
     border: none;
-    border-radius: 14px;
-    padding: 14px 20px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    letter-spacing: 0.01em;
+    border-bottom: 4px solid #46A302;
+    border-radius: 16px;
+    min-height: 48px;
+    padding: 0 24px;
+    font-size: 15px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
     cursor: pointer;
-    transition: background 0.2s ease, transform 0.15s ease;
-    font-family: inherit;
+    user-select: none;
+    transition: filter 0.15s ease, transform 0.1s ease;
   }
-
-  .btn-primary:hover {
-    background: #A0C8AC;
-    transform: translateY(-1px);
-  }
-
-  .btn-primary:active {
-    transform: translateY(0);
-  }
-
-  .btn-primary:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  /* ── Input ── */
-  .input-field {
-    width: 100%;
-    background: var(--bg-elevated);
-    border: 1px solid var(--border-mid);
-    border-radius: 12px;
-    padding: 13px 16px;
-    font-size: 0.9375rem;
-    color: var(--text-primary);
-    outline: none;
-    transition: border-color 0.2s ease;
-    font-family: inherit;
-    display: block;
-  }
-
-  .input-field::placeholder {
-    color: var(--text-muted);
-  }
-
-  .input-field:focus {
-    border-color: var(--accent);
-  }
-
-  select.input-field {
-    appearance: none;
-    -webkit-appearance: none;
-    cursor: pointer;
-  }
-
-  /* ── Animations ── */
-  .animate-fade-up {
-    animation: feedme-fadeUp 0.4s ease-out both;
-  }
-  .animate-fade-in {
-    animation: feedme-fadeIn 0.3s ease-out both;
-  }
-  .animate-slide-down {
-    animation: feedme-slideDown 0.35s ease-out both;
-  }
-  .animate-scale-in {
-    animation: feedme-scaleIn 0.3s ease-out both;
-  }
-  /* legacy compat */
-  .animate-slide-up {
-    animation: feedme-fadeUp 0.35s ease-out both;
-  }
-}
-
-/* ─── Keyframes (must be outside @layer for browser compat) ── */
-@keyframes feedme-fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes feedme-fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes feedme-slideDown {
-  from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-}
-
-@keyframes feedme-scaleIn {
-  from { opacity: 0; transform: scale(0.96); }
-  to   { opacity: 1; transform: scale(1); }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.4; }
-}
-
-.search-spinner {
-  width: 13px;
-  height: 13px;
-  border: 2px solid var(--border-strong);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: feedme-spin 0.75s linear infinite;
-}
-
-@keyframes feedme-spin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes feedme-laser {
-  0%   { top: 15%; opacity: 0.3; }
-  50%  { top: 85%; opacity: 1; }
-  100% { top: 15%; opacity: 0.3; }
 }

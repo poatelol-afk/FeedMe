@@ -4,7 +4,7 @@ import {
   Alert, ActivityIndicator, Platform, PermissionsAndroid,
 } from 'react-native';
 import { decode as atob } from 'base-64';
-import { colors, spacing, radius, fontSize } from '../lib/theme';
+import { colors, spacing, radius, fontSize, button3D } from '../lib/theme';
 
 // UUID เดิมจาก ESP32
 const SERVICE_UUID        = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
@@ -238,14 +238,14 @@ export default function BleScaleCard({ onWeightReceived }: Props) {
               </View>
             </View>
             <Text style={styles.sub}>
-              {lastWeight ? `รับน้ำหนักจำลอง: ${lastWeight} g` : 'กดปุ่มด้านล่างเพื่อจำลองค่าน้ำหนัก'}
+              {lastWeight ? `รับน้ำหนักจำลอง: ${lastWeight} g` : 'กดปุ่มด้านล่างเพื่อจำลองค่าน้ำหนักอาหาร'}
             </Text>
           </View>
         </View>
 
         <View style={styles.mockControlsRow}>
-          <Text style={{ fontSize: fontSize.xs, color: colors.textMuted }}>จำลองการชั่ง:</Text>
-          <View style={{ flexDirection: 'row', gap: 6 }}>
+          <Text style={{ fontSize: fontSize.xs, color: colors.textMuted, fontWeight: '700' }}>จำลองการชั่ง:</Text>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
             {[150, 240, 350].map((g) => (
               <TouchableOpacity
                 key={g}
@@ -284,13 +284,13 @@ export default function BleScaleCard({ onWeightReceived }: Props) {
         </View>
 
         <TouchableOpacity
-          style={[styles.btn, isConnected && styles.btnDanger, isBusy && styles.btnDisabled]}
+          style={[styles.btn3D, isConnected ? button3D.danger : button3D.accent, isBusy && styles.btnDisabled]}
           onPress={isConnected ? disconnect : connect}
           disabled={isBusy}
         >
           {isBusy
-            ? <ActivityIndicator size="small" color={colors.accent} />
-            : <Text style={[styles.btnText, isConnected && { color: colors.danger }]}>
+            ? <ActivityIndicator size="small" color="#ffffff" />
+            : <Text style={styles.btnText}>
                 {isConnected ? 'ตัดการเชื่อม' : 'เชื่อมต่อ'}
               </Text>
           }
@@ -299,8 +299,8 @@ export default function BleScaleCard({ onWeightReceived }: Props) {
 
       {/* Quick Mock shortcut also available */}
       <View style={styles.mockControlsRow}>
-        <Text style={{ fontSize: fontSize.xs, color: colors.textMuted }}>Mock ด่วน:</Text>
-        <View style={{ flexDirection: 'row', gap: 6 }}>
+        <Text style={{ fontSize: fontSize.xs, color: colors.textMuted, fontWeight: '700' }}>Mock ด่วน:</Text>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
           {[150, 240].map((g) => (
             <TouchableOpacity
               key={g}
@@ -322,53 +322,84 @@ export default function BleScaleCard({ onWeightReceived }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.bgCard, borderRadius: radius.lg,
-    borderWidth: 1, borderColor: colors.borderSoft,
+    backgroundColor: '#ffffff',
+    borderRadius: radius.lg,
+    borderWidth: 2,
+    borderColor: '#e5e5e5',
+    borderBottomWidth: 4,
     padding: spacing.md,
   },
-  cardConnected: { borderColor: colors.accentMid, backgroundColor: 'rgba(143,184,154,0.05)' },
+  cardConnected: {
+    borderColor: '#a5ed6e',
+    backgroundColor: '#f6fff0',
+  },
 
-  row:      { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   iconWrap: {
-    width: 36, height: 36, borderRadius: 18,
-    backgroundColor: colors.bgElevated, borderWidth: 1, borderColor: colors.borderSoft,
-    alignItems: 'center', justifyContent: 'center',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#ddf4ff',
+    borderWidth: 2,
+    borderColor: '#bfe9ff',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  icon:  { fontSize: 16 },
-  info:  { flex: 1 },
-  title: { fontSize: fontSize.sm, fontWeight: '500', color: colors.textPrimary },
-  sub:   { fontSize: fontSize.xs, color: colors.textMuted, marginTop: 2 },
+  icon: { fontSize: 20 },
+  info: { flex: 1 },
+  title: { fontSize: fontSize.sm, fontWeight: '700', color: colors.text },
+  sub: { fontSize: fontSize.xs, color: colors.textMuted, marginTop: 2, fontWeight: '600' },
 
-  btn: {
-    paddingHorizontal: spacing.md, paddingVertical: spacing.sm,
-    borderRadius: radius.md, borderWidth: 1, borderColor: colors.accent,
+  btn3D: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
   },
-  btnDanger:   { borderColor: 'rgba(220,60,60,0.3)' },
   btnDisabled: { opacity: 0.5 },
-  btnText:     { fontSize: fontSize.xs, fontWeight: '500', color: colors.accent },
+  btnText: { fontSize: fontSize.xs, fontWeight: '800', color: '#ffffff' },
 
   mockBadge: {
-    backgroundColor: 'rgba(201,169,110,0.15)',
-    paddingHorizontal: 5, paddingVertical: 1,
-    borderRadius: 4,
+    backgroundColor: '#fff4cc',
+    borderColor: '#ffc800',
+    borderWidth: 1,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
   },
   mockBadgeText: {
-    fontSize: 9, fontWeight: '700', color: colors.gold, letterSpacing: 0.5,
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#b38600',
+    letterSpacing: 0.5,
   },
 
   mockControlsRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    marginTop: spacing.sm, paddingTop: spacing.sm,
-    borderTopWidth: 1, borderTopColor: colors.borderSoft,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: spacing.md,
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
   },
   mockBtn: {
-    paddingHorizontal: 8, paddingVertical: 3,
-    backgroundColor: colors.bgElevated, borderRadius: radius.sm,
-    borderWidth: 1, borderColor: colors.borderSoft,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#ffffff',
+    borderRadius: radius.md,
+    borderWidth: 2,
+    borderColor: '#1cb0f6',
+    borderBottomWidth: 3,
   },
   mockBtnText: {
-    fontSize: fontSize.xs, color: colors.textSecondary, fontWeight: '500',
+    fontSize: fontSize.xs,
+    color: '#1cb0f6',
+    fontWeight: '800',
   },
 
-  errorText: { fontSize: fontSize.xs, color: colors.danger, marginTop: spacing.sm },
+  errorText: {
+    fontSize: fontSize.xs,
+    color: colors.danger,
+    marginTop: spacing.sm,
+    fontWeight: '600',
+  },
 });

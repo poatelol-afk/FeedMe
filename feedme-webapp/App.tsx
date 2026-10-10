@@ -20,16 +20,26 @@ import ProfileScreen  from './src/screens/ProfileScreen';
 const Tab   = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-// ── ไอคอน Tab bar ──────────────────────────────────────
+// ── Duolingo Style Tab Bar Icons ─────────────────────────
 const TAB_ICONS: Record<string, string> = {
-  Home: '🏠', Log: '📝', Workout: '💪', Shop: '🛒', Profile: '👤',
+  Home: '🏠',
+  Log: '📝',
+  Workout: '💪',
+  Shop: '🛒',
+  Profile: '👤',
 };
 
 function TabIcon({ name, focused }: { name: string; focused: boolean }) {
   return (
-    <Text style={{ fontSize: 22, opacity: focused ? 1 : 0.45 }}>
-      {TAB_ICONS[name]}
-    </Text>
+    <View style={{
+      alignItems: 'center',
+      justifyContent: 'center',
+      transform: [{ scale: focused ? 1.15 : 1.0 }],
+    }}>
+      <Text style={{ fontSize: 22, opacity: focused ? 1 : 0.65 }}>
+        {TAB_ICONS[name]}
+      </Text>
+    </View>
   );
 }
 
@@ -42,23 +52,28 @@ function MainTabs() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: colors.bgCard,
-          borderTopColor: colors.borderSoft,
-          borderTopWidth: 1,
-          paddingTop: 6,
-          paddingBottom: Math.max(insets.bottom, 6),
+          backgroundColor: '#ffffff',
+          borderTopColor: '#e5e5e5',
+          borderTopWidth: 2,
+          paddingTop: 8,
+          paddingBottom: Math.max(insets.bottom, 8),
           height: 64 + insets.bottom,
         },
-        tabBarActiveTintColor:   colors.accent,
-        tabBarInactiveTintColor: colors.textMuted,
-        tabBarLabelStyle: { fontSize: 10, marginBottom: 6 },
+        tabBarActiveTintColor: colors.accent,
+        tabBarInactiveTintColor: '#999999',
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '700',
+          marginBottom: 4,
+          letterSpacing: 0.3,
+        },
         tabBarIcon: ({ focused }) => (
           <TabIcon name={route.name} focused={focused} />
         ),
       })}
     >
       <Tab.Screen name="Home"    component={HomeScreen}    options={{ title: 'หน้าหลัก' }} />
-      <Tab.Screen name="Log"     component={LogScreen}     options={{ title: 'บันทึก' }} />
+      <Tab.Screen name="Log"     component={LogScreen}     options={{ title: 'บันทึกอาหาร' }} />
       <Tab.Screen name="Workout" component={WorkoutScreen} options={{ title: 'ออกกำลัง' }} />
       <Tab.Screen name="Shop"    component={ShopScreen}    options={{ title: 'ร้านค้า' }} />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'โปรไฟล์' }} />
@@ -72,7 +87,7 @@ function RootNav() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.bgBase, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator color={colors.accent} size="large" />
       </View>
     );
@@ -92,7 +107,7 @@ function RootNav() {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <AuthProvider>
         <NavigationContainer>
           <RootNav />

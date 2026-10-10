@@ -19,12 +19,11 @@ Inspired by modern health tech (Whoop, Apple Fitness+) and the behavioral engine
 ```
 FeedMe/
 ├── feedme-website/       # Next.js 16 Promotional Showcase Website (Landing Page)
-│   ├── src/app/page.tsx  # Modern Health-Tech Showcase & 'Launch Web App' CTA
+│   ├── src/app/page.tsx  # Gamified Health-Tech Showcase & 'Launch Web App' CTA
 │   └── src/components/   # Modular UI, Hero Preview, Charts, AI Scanner
-├── feedme-andriod/       # Core FeedMe Cross-Platform Web & Mobile App (Expo SDK 54)
+├── feedme-webapp/        # Core FeedMe Cross-Platform Web & Mobile App (Expo SDK 54)
 │   ├── src/screens/      # Home, Log, AI Workout, Shop, Profile tabs
 │   └── src/components/   # Native BLE Scale + Web Simulation Mode
-├── feedme-ios/           # Expo 54 iOS target
 ├── Hardware/             # Smart Scale Firmware & Schematics (ESP32-C3)
 ├── Plan/                 # Roadmap and strategic milestones (P1 Plan)
 ├── Reseach/              # Nutrition databases, Thai FCD references, BLE protocols
@@ -46,9 +45,9 @@ npm run dev
 # Open http://localhost:3000 (Landing Page with 'Launch Web App' CTA)
 ```
 
-### 2. Core Web App & Mobile App (`feedme-andriod`)
+### 2. Core Cross-Platform Web & Mobile App (`feedme-webapp`)
 ```bash
-cd feedme-andriod
+cd feedme-webapp
 npm install
 
 # Run as a Web App on your browser:

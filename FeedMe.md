@@ -8,18 +8,19 @@ Develop a cohesive, high-performance, and beautifully engineered ecosystem that 
 
 ---
 
-# THEME & UI/UX DESIGN SYSTEM
-Inspired by the modern, distraction-free aesthetic from **"AI เปลี่ยนชีวิตการออกกำลังกายของผม"** (ลงทุนDiary) along with **Whoop**, **Apple Fitness+**, and **Linear**:
-- **Aesthetic:** Minimalist Health-Tech / Clean Dark Canvas. No visual noise, calm and purposeful.
+# THEME & UI/UX DESIGN SYSTEM (DUOLINGO GAMIFICATION)
+Adopted from the Duolingo gamification design specification, balancing vibrant playfulness with disciplined fitness habit loops:
+- **Aesthetic:** Duolingo Gamification System / Playful, Friendly, and Habit-Forming.
 - **Color Palette:**
-  - Background Base: Warm Obsidian Charcoal (`#111110`)
-  - Elevated Cards / Surfaces: Deep Basalt (`#1A1917` / `#221F1C`)
-  - Subtle Borders: Soft warm white stroke (`rgba(255, 248, 240, 0.08)`)
-  - Primary Accent: Fresh Sage Green (`#8FB89A` / `#4ADE80`)
-  - Gamification Accent: Warm Refined Gold (`#C9A96E`)
-  - Macronutrients: Protein Ice Blue (`#7EB8D4`), Carb Sage (`#8FB89A`), Healthy Fat Amber (`#D4A96A`)
-- **Typography:** Modern clean sans-serif (Inter / Geist / Prompt for Thai localization) with precise numerical tabular data (`tabular-nums`) and strict typographic hierarchy.
-- **Micro-Interactions:** Smooth progress rings, quiet haptic feedback, subtle transition glows, and clean metric cards.
+  - Canvas Background: Calming Pale Sky-Blue (`#ddf4ff`)
+  - Elevated Cards / Surfaces: Crisp White (`#ffffff`) with 3D bottom borders (`#e5e5e5`)
+  - Primary CTA / Progress: Vibrant Lime-Green (`#a5ed6e`) with 3D shadow border (`#79c838`)
+  - Text: High-contrast Charcoal (`#3c3c3c`) with bold weighting (700)
+  - Interactive Accent: Bright Cyan-Blue (`#1cb0f6`) with 3D border (`#1899d6`)
+  - Gamification Badges: Streak Fire (`#ff9600`), Gold Coins/Gems (`#ffc800`), Hearts/Vitality (`#ff4b4b`), XP Purple (`#ce82ff`)
+  - Macronutrients: Protein Cyan (`#1cb0f6`), Carb Gold (`#ffc800`), Healthy Fat Orange (`#ff9600`)
+- **Typography:** Duolingo bold sans-serif hierarchy (700 bold body and display, 600 headings) optimized for mobile scannability.
+- **Tactile 3D Buttons:** Pushable buttons with signature 4px bottom borders (`borderBottomWidth: 4`) providing a satisfying arcade touch.
 
 ---
 
@@ -27,27 +28,28 @@ Inspired by the modern, distraction-free aesthetic from **"AI เปลี่ย
 1. **IoT Smart Scale Integration (ESP32 + HX711):**
    - Dual BLE GATT & Wi-Fi HTTP communication.
    - Tare button to zero out plates/containers; Send button transmits real-time gram weight payloads directly to the active app.
+   - Built-in Web Scale Simulator for rapid browser testing and offline simulation.
 2. **AI Food Vision Scanner (`AIFoodScanner`):**
    - Instant meal photo recognition powered by Multimodal AI (Gemini Vision).
    - Tailored support for Thai street food, home-cooked dishes, and international nutrition tables with instant calorie & macro estimation.
 3. **AI Workout Coach & Progressive Overload Planner:**
    - 3 training modes: Gym (Weight Training), Cardio, and Home Calisthenics.
-   - Adaptive weight recommendations: computes volume, sets, reps, and RPE, automatically suggesting progressive overload target weights.
+   - Adaptive weight recommendations: computes volume, sets, reps, and RPE, automatically suggesting progressive overload target weights with XP rewards.
 4. **Holistic Net Calorie Dashboard:**
    - Real-time balance: `Net Calories = Consumed Calories - Burned Calories (Active MET) vs. Target TDEE`.
-   - Comprehensive tracking: Water hydration (2,500 ml target), Daily Supplement Stack, and Weight timeline graph.
-5. **Gamification & Habit Engine:**
-   - Daily Quests & Streaks (e.g., Log all meals, hit hydration goal, complete workout).
-   - Energy Coin rewards redeemable for healthy rewards or planned cheat meals in the Shop.
+   - Comprehensive tracking: Water hydration, Daily Supplement Stack, and Weight timeline graph.
+5. **Gamification & Habit Engine (Duolingo Style):**
+   - Daily Quests & Streaks (e.g. Weigh-in morning quest, hit protein goal, complete 3 workout sets).
+   - Energy Coin rewards redeemable in the Shop for Streak Freezes ❄️, Heart Refills ❤️, XP Potions 🧪, or Cheat Meal Passes 🍔.
 6. **Cross-Platform Synchronization:**
-   - Unified Supabase PostgreSQL backend with full offline-first `localStorage` / `AsyncStorage` fallback.
+   - Unified Supabase PostgreSQL backend with offline-first support.
 
 ---
 
 # SCOPE BOUNDARIES
 - **In-Scope:**
   - Next.js 16 Promotional Showcase Website (`feedme-website`) at `http://localhost:3000` with clean hero, interactive previews, and "Launch Web App" CTA.
-  - Unified Expo Cross-Platform Application (`feedme-andriod` & `feedme-ios`) serving Web (`http://localhost:8081`), Android, and iOS with 5 core tabs (Home, Log, Workout, Shop, Profile).
+  - Unified Expo Cross-Platform Application (`feedme-webapp`) serving Web (`http://localhost:8081`) and Android APK with 5 core tabs (Home, Log, Workout, Shop, Profile).
   - ESP32 Arduino / PlatformIO firmware (`Hardware`) for load cell calibration and transmission.
   - AI Vision food analysis and AI Workout Progressive Overload calculation logic.
   - Repository documentation hygiene following pre-shipping standards (`README.md`, `ARCHITECTURE.md`, `PRE_LAUNCH_CHECKLIST.md`, `SECURITY.md`).

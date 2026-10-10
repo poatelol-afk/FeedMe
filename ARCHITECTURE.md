@@ -15,9 +15,8 @@ flowchart TD
     end
 
     subgraph Client_Applications ["Client Application Layer"]
-        WEB["Next.js 16 Web Dashboard\n(Desktop / Tablet)"]
-        APP_A["Expo React Native Android\n(Native BLE Client)"]
-        APP_I["Expo React Native iOS\n(Native BLE Client)"]
+        WEB_SITE["Next.js 16 Showcase Site\n(feedme-website :3000)"]
+        WEB_APP["Expo Cross-Platform Web & Mobile\n(feedme-webapp :8081 / APK)"]
     end
 
     subgraph Backend_Cloud ["Backend & Services Layer"]
@@ -26,18 +25,14 @@ flowchart TD
         AI["Google Gemini Vision API\n(Food Recognition Engine)"]
     end
 
-    MCU -- "BLE GATT Notification\n(Service: 4fafc201...)" --> APP_A
-    MCU -- "BLE GATT Notification\n(Service: 4fafc201...)" --> APP_I
-    MCU -. "Web Bluetooth (Chrome)" .-> WEB
+    MCU -- "BLE GATT Notification\n(Service: 4fafc201...)" --> WEB_APP
     MCU -- "Wi-Fi HTTP POST (192.168.x.x)" --> API
 
     API --> SB
-    WEB <--> SB
-    APP_A <--> SB
-    APP_I <--> SB
+    WEB_APP <--> SB
+    WEB_SITE -. "Launches Web App" .-> WEB_APP
 
-    WEB -- "Image Payload" --> AI
-    APP_A -- "Image Payload" --> AI
+    WEB_APP -- "Image Payload" --> AI
 ```
 
 ---
