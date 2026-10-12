@@ -1,12 +1,13 @@
 // ═══════════════════════════════════════════════════════
-//  Supabase Client สำหรับ React Native
-//  ใช้ AsyncStorage แทน Cookie (เหมาะกับ Mobile)
+//  Supabase Client สำหรับ React Native / Expo Web
 // ═══════════════════════════════════════════════════════
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const SUPABASE_URL = 'https://ptvjyexxxsfwjszdzthw.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_g3gafcsVYuLMYmR0TOuKMQ_oHjefZrr';
+const SUPABASE_URL =
+  process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://ptvjyexxxsfwjszdzthw.supabase.co';
+const SUPABASE_ANON_KEY =
+  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_g3gafcsVYuLMYmR0TOuKMQ_oHjefZrr';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {

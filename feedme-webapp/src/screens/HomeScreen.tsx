@@ -6,105 +6,181 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import * as db from '../lib/db';
 import { colors, spacing, radius, fontSize, button3D } from '../lib/theme';
+import { calculateFitnessLevel } from '../lib/utils';
 import { useAuth } from '../hooks/useAuth';
-import type { DiaryEntry, NutritionGoal, StreakData } from '../types';
+import type { DiaryEntry, NutritionGoal, Quest, StreakData, WorkoutEntry } from '../types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   const { user, signOut } = useAuth();
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
-  const [goal, setGoal]   = useState<NutritionGoal | null>(null);
+  const [goal, setGoal] = useState<NutritionGoal | null>(null);
   const [today, setToday] = useState<DiaryEntry[]>([]);
+  const [workouts, setWorkouts] = useState<WorkoutEntry[]>([]);
+  const [quests, setQuests] = useState<Quest[]>([]);
   const [streak, setStreak] = useState<StreakData | null>(null);
-  const [coins, setCoins]  = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [coins, setCoins] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
     try {
-      const [g, entries, s, c] = await Promise.all([
+      const [g, entries, w, q, s, c] = await Promise.all([
         db.getGoal(),
         db.getTodayDiary(),
+        db.getTodayWorkouts(),
+        db.getQuests(),
         db.getStreak(),
         db.getCoins(),
       ]);
       setGoal(g);
       setToday(entries);
+      setWorkouts(w);
+      setQuests(q);
       setStreak(s);
       setCoins(c);
     } catch (e) {
       console.error(e);
     } finally {
-      setLoading(false);
       setRefreshing(false);
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { void load(); }, [load]);
 
-  const onRefresh = () => { setRefreshing(true); load(); };
+  const onRefresh = () => { setRefreshing(true); void load(); };
 
-  // คำนวณ macros วันนี้
   const totalCal  = today.reduce((s, e) => s + (e.kcal ?? 0), 0);
+  const totalBurned = workouts.reduce((s, w) => s + (w.caloriesBurned ?? 0), 0);
+  const netCal = Math.max(0, Math.round(totalCal - totalBurned));
+
   const totalProt = today.reduce((s, e) => s + (e.protein ?? 0), 0);
   const totalCarb = today.reduce((s, e) => s + (e.carbs ?? 0), 0);
   const totalFat  = today.reduce((s, e) => s + (e.fat ?? 0), 0);
 
-  const tdee = goal?.tdee ?? 2000;
-  const calPct = Math.min((totalCal / tdee) * 100, 100);
+  const tdee = goal?.tdee ?? 2200;
+  const remainingCal = Math.max(0, tdee - netCal);
+  const calPct = Math.min((netCal / Math.max(1, tdee)) * 100, 100);
 
-  const targetProt = goal?.protein.g ?? 140;
-  const targetCarb = goal?.carbs.g ?? 200;
-  const targetFat  = goal?.fat.g ?? 60;
+  const targetProt = goal?.protein.g ?? 165;
+  const targetCarb = goal?.carbs.g ?? 220;
+  const targetFat  = goal?.fat.g ?? 73;
 
-  // Day of week tracker (Duolingo style)
+  const completedQuests = quests.filter(q => q.isCompleted).length;
+  const fitnessLevel = calculateFitnessLevel(streak?.current ?? 1, completedQuests, workouts.length);
+
   const daysOfWeek = ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา'];
-  const todayIndex = (new Date().getDay() + 6) % 7; // Monday = 0
+  const todayIndex = (new Date().getDay() + 6) % 7;
 
   return (
     <ScrollView
       style={styles.screen}
       contentContainerStyle={[styles.content, { paddingTop: spacing.md + insets.top }]}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
-      {/* ── Gamified Status Bar (Duolingo Header) ── */}
-      <View style={styles.topStatusHeader}>
-        <View style={styles.userGreetingBox}>
-          <Text style={styles.greetingTitle}>สวัสดีคุณ {user?.email?.split('@')[0] || 'นักกีฬา'} 👋</Text>
-          <Text style={styles.levelSubtitle}>Level 3 · Apprentice Athlete</Text>
+      {/* Top Modern Bento Header */}
+      <View style={styles.topHeader}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.brandLabel}>⚡ FEEDME AI · BENTO ATHLETIC</Text>
+          <Text style={styles.greetingTitle}>สวัสดีคุณ {user?.email?.split('@')[0] || 'Athlete'} 👋</Text>
         </View>
 
         <View style={styles.statsRow}>
-          {/* Streak Flame */}
-          <View style={styles.badgeStreak}>
-            <Text style={styles.badgeEmoji}>🔥</Text>
-            <Text style={styles.badgeTextStreak}>{streak?.current ?? 1}</Text>
+          <View style={styles.pillStreak}>
+            <Text style={styles.pillEmoji}>🔥</Text>
+            <Text style={styles.pillTextStreak}>{streak?.current ?? 1}d</Text>
+          </View>
+          <TouchableOpacity onPress={() => navigation.navigate('Shop')} style={styles.pillCoins}>
+            <Text style={styles.pillEmoji}>🪙</Text>
+            <Text style={styles.pillTextCoins}>{coins}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={styles.pillLevel}>
+            <Text style={styles.pillTextLevel}>Lv.{fitnessLevel.level} {fitnessLevel.title}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Dark Midnight Navy Hero Bento Card: Net Energy Balance */}
+      <View style={styles.heroCard}>
+        <View style={styles.heroHeaderRow}>
+          <View>
+            <Text style={styles.heroPreTitle}>LIVE NET ENERGY BALANCE</Text>
+            <Text style={styles.heroSubTitle}>Food In − Workout Burn vs TDEE</Text>
+          </View>
+          <View style={styles.heroBadge}>
+            <Text style={styles.heroBadgeText}>{remainingCal.toLocaleString()} kcal left</Text>
+          </View>
+        </View>
+
+        <View style={styles.heroMainRow}>
+          <View>
+            <Text style={styles.heroBigNum}>{netCal.toLocaleString()}</Text>
+            <Text style={styles.heroBigUnit}>/ {tdee.toLocaleString()} Net kcal</Text>
           </View>
 
-          {/* Gems / Coins */}
-          <TouchableOpacity onPress={() => navigation.navigate('Shop')} style={styles.badgeCoins}>
-            <Text style={styles.badgeEmoji}>🪙</Text>
-            <Text style={styles.badgeTextCoins}>{coins}</Text>
-          </TouchableOpacity>
+          <View style={styles.heroBreakdownCol}>
+            <View style={styles.heroBreakdownItem}>
+              <Text style={styles.heroBreakdownLabel}>🍱 ทานแล้ว</Text>
+              <Text style={[styles.heroBreakdownVal, { color: '#38BDF8' }]}>+{Math.round(totalCal)} kcal</Text>
+            </View>
+            <View style={styles.heroBreakdownItem}>
+              <Text style={styles.heroBreakdownLabel}>🔥 เผาผลาญ</Text>
+              <Text style={[styles.heroBreakdownVal, { color: '#34D399' }]}>-{Math.round(totalBurned)} kcal</Text>
+            </View>
+            <View style={styles.heroBreakdownItem}>
+              <Text style={styles.heroBreakdownLabel}>⚡ XP สะสม</Text>
+              <Text style={[styles.heroBreakdownVal, { color: '#FBBF24' }]}>{fitnessLevel.xp} XP</Text>
+            </View>
+          </View>
+        </View>
 
-          {/* Hearts */}
-          <View style={styles.badgeHearts}>
-            <Text style={styles.badgeEmoji}>❤️</Text>
-            <Text style={styles.badgeTextHearts}>5</Text>
+        <View style={styles.heroProgressTrack}>
+          <View style={[styles.heroProgressFill, { width: `${calPct}%` as any }]} />
+        </View>
+      </View>
+
+      {/* Macros Triple Bento Grid */}
+      <View style={styles.bentoCard}>
+        <Text style={styles.cardPreTitle}>🥗 MACRONUTRIENT TARGETS</Text>
+        <View style={styles.macroColumns}>
+          <View style={styles.macroBox}>
+            <Text style={[styles.macroLabel, { color: colors.protein }]}>โปรตีน</Text>
+            <Text style={styles.macroValText}>{Math.round(totalProt)}g</Text>
+            <Text style={styles.macroTargetText}>/ {targetProt}g</Text>
+            <View style={styles.miniBarTrack}>
+              <View style={[styles.miniBarFill, { backgroundColor: colors.protein, width: `${Math.min((totalProt / Math.max(1, targetProt)) * 100, 100)}%` as any }]} />
+            </View>
+          </View>
+
+          <View style={styles.macroBox}>
+            <Text style={[styles.macroLabel, { color: colors.carbs }]}>คาร์บ</Text>
+            <Text style={styles.macroValText}>{Math.round(totalCarb)}g</Text>
+            <Text style={styles.macroTargetText}>/ {targetCarb}g</Text>
+            <View style={styles.miniBarTrack}>
+              <View style={[styles.miniBarFill, { backgroundColor: colors.carbs, width: `${Math.min((totalCarb / Math.max(1, targetCarb)) * 100, 100)}%` as any }]} />
+            </View>
+          </View>
+
+          <View style={styles.macroBox}>
+            <Text style={[styles.macroLabel, { color: colors.fat }]}>ไขมัน</Text>
+            <Text style={styles.macroValText}>{Math.round(totalFat)}g</Text>
+            <Text style={styles.macroTargetText}>/ {targetFat}g</Text>
+            <View style={styles.miniBarTrack}>
+              <View style={[styles.miniBarFill, { backgroundColor: colors.fat, width: `${Math.min((totalFat / Math.max(1, targetFat)) * 100, 100)}%` as any }]} />
+            </View>
           </View>
         </View>
       </View>
 
-      {/* ── Weekly Streak Trail (Duolingo Path Style) ── */}
-      <View style={styles.streakCard}>
-        <View style={styles.streakCardHeader}>
-          <Text style={styles.streakTitle}>🔥 สถิติความต่อเนื่อง 7 วัน</Text>
-          <Text style={styles.streakDaysText}>{streak?.current ?? 1} วันติดกันแล้ว!</Text>
+      {/* Weekly Consistency Bento Card */}
+      <View style={styles.bentoCard}>
+        <View style={styles.rowBetween}>
+          <Text style={styles.cardMainTitle}>🔥 วินัยความต่อเนื่อง 7 วัน</Text>
+          <Text style={styles.streakHighlight}>{streak?.current ?? 1} วันติดกัน</Text>
         </View>
         <View style={styles.weekCirclesRow}>
           {daysOfWeek.map((day, idx) => {
-            const isCompleted = idx < todayIndex || (idx === todayIndex && today.length > 0);
+            const isCompleted = idx < todayIndex || (idx === todayIndex && (today.length > 0 || workouts.length > 0));
             const isToday = idx === todayIndex;
             return (
               <View key={day} style={styles.dayCircleCol}>
@@ -113,11 +189,8 @@ export default function HomeScreen() {
                   isCompleted && styles.dayCircleCompleted,
                   isToday && !isCompleted && styles.dayCircleToday,
                 ]}>
-                  <Text style={[
-                    styles.dayCircleEmoji,
-                    isCompleted && { color: '#ffffff' }
-                  ]}>
-                    {isCompleted ? '✓' : isToday ? '🔥' : ''}
+                  <Text style={[styles.dayCircleEmoji, isCompleted && { color: '#FFFFFF' }]}>
+                    {isCompleted ? '✓' : isToday ? '⚡' : ''}
                   </Text>
                 </View>
                 <Text style={[styles.dayCircleLabel, isToday && styles.dayCircleLabelToday]}>{day}</Text>
@@ -127,130 +200,70 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* ── Calories Today (Main Duolingo 3D Card) ── */}
-      <View style={styles.card3D}>
-        <View style={styles.cardHeaderRow}>
-          <View>
-            <Text style={styles.cardPreTitle}>⚡ พลังงานประจำวัน</Text>
-            <Text style={styles.cardMainTitle}>เป้าหมายแคลอรี่</Text>
-          </View>
-          <View style={styles.xpPill}>
-            <Text style={styles.xpPillText}>+50 XP</Text>
-          </View>
+      {/* Daily Missions (Scale-Free) */}
+      <View style={styles.bentoCard}>
+        <View style={styles.rowBetween}>
+          <Text style={styles.cardMainTitle}>🎯 ภารกิจสุขภาพประจำวัน</Text>
+          <Text style={styles.questSubtitle}>รับเหรียญ &amp; XP</Text>
         </View>
-
-        <View style={styles.calBigRow}>
-          <Text style={styles.calBigNum}>{Math.round(totalCal)}</Text>
-          <Text style={styles.calBigSlash}>/</Text>
-          <Text style={styles.calBigTarget}>{tdee} kcal</Text>
-        </View>
-
-        {/* 3D Progress Bar */}
-        <View style={styles.progressBarTrack}>
-          <View style={[styles.progressBarFill, { width: `${calPct}%` as any }]} />
-        </View>
-        <Text style={styles.progressPercentText}>{Math.round(calPct)}% ของเป้าหมายประจำวัน</Text>
-      </View>
-
-      {/* ── Macros 3D Triple Grid ── */}
-      <View style={styles.card3D}>
-        <Text style={styles.cardPreTitle}>🥗 สารอาหารหลัก (MACROS)</Text>
-        <View style={styles.macroColumns}>
-          {/* Protein */}
-          <View style={[styles.macroPillBox, { borderColor: '#1cb0f6' }]}>
-            <Text style={[styles.macroLabel, { color: '#1cb0f6' }]}>โปรตีน</Text>
-            <Text style={styles.macroValText}>{Math.round(totalProt)}g</Text>
-            <Text style={styles.macroTargetText}>เป้า {targetProt}g</Text>
-            <View style={styles.miniBarTrack}>
-              <View style={[styles.miniBarFill, { backgroundColor: '#1cb0f6', width: `${Math.min((totalProt / targetProt) * 100, 100)}%` as any }]} />
-            </View>
-          </View>
-
-          {/* Carbs */}
-          <View style={[styles.macroPillBox, { borderColor: '#ffc800' }]}>
-            <Text style={[styles.macroLabel, { color: '#cca000' }]}>คาร์บ</Text>
-            <Text style={styles.macroValText}>{Math.round(totalCarb)}g</Text>
-            <Text style={styles.macroTargetText}>เป้า {targetCarb}g</Text>
-            <View style={styles.miniBarTrack}>
-              <View style={[styles.miniBarFill, { backgroundColor: '#ffc800', width: `${Math.min((totalCarb / targetCarb) * 100, 100)}%` as any }]} />
-            </View>
-          </View>
-
-          {/* Fat */}
-          <View style={[styles.macroPillBox, { borderColor: '#ff9600' }]}>
-            <Text style={[styles.macroLabel, { color: '#ff9600' }]}>ไขมัน</Text>
-            <Text style={styles.macroValText}>{Math.round(totalFat)}g</Text>
-            <Text style={styles.macroTargetText}>เป้า {targetFat}g</Text>
-            <View style={styles.miniBarTrack}>
-              <View style={[styles.miniBarFill, { backgroundColor: '#ff9600', width: `${Math.min((totalFat / targetFat) * 100, 100)}%` as any }]} />
-            </View>
-          </View>
-        </View>
-      </View>
-
-      {/* ── Daily Quests (Duolingo Missions) ── */}
-      <View style={styles.card3D}>
-        <View style={styles.cardHeaderRow}>
-          <Text style={styles.cardMainTitle}>🎯 ภารกิจรับเหรียญวันนี้</Text>
-          <Text style={styles.questSubtitle}>รับเพิ่มสูงสุด +65 🪙</Text>
-        </View>
-
-        <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={styles.questItem}>
-          <Text style={styles.questEmoji}>⚖️</Text>
-          <View style={styles.questInfo}>
-            <Text style={styles.questName}>ชั่งน้ำหนักเช้านี้ด้วย BLE Scale</Text>
-            <Text style={styles.questReward}>+15 🪙 เหรียญรางวัล</Text>
-          </View>
-          <View style={styles.questActionBtn}>
-            <Text style={styles.questActionText}>ทำเลย</Text>
-          </View>
-        </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate('Log')} style={styles.questItem}>
-          <Text style={styles.questEmoji}>🥗</Text>
+          <Text style={styles.questEmoji}>📸</Text>
           <View style={styles.questInfo}>
-            <Text style={styles.questName}>บันทึกอาหารมื้อแรกของวัน</Text>
+            <Text style={styles.questName}>บันทึกมื้ออาหารด้วย AI หรือสัดส่วนทัพพี/จาน</Text>
             <Text style={styles.questReward}>+20 🪙 เหรียญรางวัล</Text>
           </View>
           <View style={[styles.questActionBtn, today.length > 0 && styles.questActionBtnDone]}>
-            <Text style={[styles.questActionText, today.length > 0 && { color: '#ffffff' }]}>
-              {today.length > 0 ? 'สำเร็จ ✓' : 'ทำเลย'}
+            <Text style={[styles.questActionText, today.length > 0 && { color: '#FFFFFF' }]}>
+              {today.length > 0 ? 'สำเร็จ ✓' : 'บันทึก'}
             </Text>
           </View>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate('Workout')} style={styles.questItem}>
-          <Text style={styles.questEmoji}>💪</Text>
+          <Text style={styles.questEmoji}>🏋️</Text>
           <View style={styles.questInfo}>
-            <Text style={styles.questName}>ออกกำลังกาย 3 เซ็ตขึ้นไป</Text>
+            <Text style={styles.questName}>ฝึกเวท Progressive Overload หรือคาร์ดิโอ</Text>
             <Text style={styles.questReward}>+30 🪙 เหรียญรางวัล</Text>
           </View>
+          <View style={[styles.questActionBtn, workouts.length > 0 && styles.questActionBtnDone]}>
+            <Text style={[styles.questActionText, workouts.length > 0 && { color: '#FFFFFF' }]}>
+              {workouts.length > 0 ? 'สำเร็จ ✓' : 'เริ่มฝึก'}
+            </Text>
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={styles.questItem}>
+          <Text style={styles.questEmoji}>📉</Text>
+          <View style={styles.questInfo}>
+            <Text style={styles.questName}>อัปเดตน้ำหนักตัว (kg) และเป้าหมาย TDEE</Text>
+            <Text style={styles.questReward}>+15 🪙 เหรียญรางวัล</Text>
+          </View>
           <View style={styles.questActionBtn}>
-            <Text style={styles.questActionText}>ทำเลย</Text>
+            <Text style={styles.questActionText}>อัปเดต</Text>
           </View>
         </TouchableOpacity>
       </View>
 
-      {/* ── Duolingo Quick Actions (Pushable 3D Buttons) ── */}
+      {/* Quick Action Row */}
       <View style={styles.actionRow}>
         <TouchableOpacity
-          style={[styles.bigButton3D, button3D.primary]}
+          style={[styles.bigBtn, button3D.primary]}
           onPress={() => navigation.navigate('Log')}
         >
-          <Text style={styles.bigButtonTextPrimary}>+ บันทึกอาหารทันที</Text>
+          <Text style={styles.bigBtnTextPrimary}>+ บันทึกอาหาร (AI)</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.bigButton3D, button3D.accent]}
+          style={[styles.bigBtn, button3D.accent]}
           onPress={() => navigation.navigate('Workout')}
         >
-          <Text style={styles.bigButtonTextAccent}>🏋️ เริ่มออกกำลังกาย</Text>
+          <Text style={styles.bigBtnTextAccent}>🏋️ เริ่มฝึกซ้อม</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Sign out text */}
       <TouchableOpacity onPress={signOut} style={styles.logoutBtn}>
-        <Text style={styles.logoutText}>ออกจากระบบบัญชี ({user?.email})</Text>
+        <Text style={styles.logoutText}>ออกจากระบบ ({user?.email})</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -260,23 +273,22 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.md, gap: spacing.md, paddingBottom: 40 },
 
-  // Gamification Top Status Bar
-  topStatusHeader: {
+  topHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.xs,
+    gap: 8,
   },
-  userGreetingBox: { flex: 1 },
+  brandLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: colors.primaryDark,
+    letterSpacing: 0.7,
+  },
   greetingTitle: {
-    fontSize: fontSize.base,
-    fontWeight: '700',
+    fontSize: fontSize.lg,
+    fontWeight: '800',
     color: colors.text,
-  },
-  levelSubtitle: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    fontWeight: '600',
     marginTop: 2,
   },
   statsRow: {
@@ -284,86 +296,175 @@ const styles = StyleSheet.create({
     gap: 6,
     alignItems: 'center',
   },
+  pillStreak: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: radius.full,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    gap: 3,
+  },
+  pillTextStreak: { fontSize: 11, fontWeight: '800', color: colors.streakDark },
+  pillCoins: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: radius.full,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    gap: 3,
+  },
+  pillTextCoins: { fontSize: 11, fontWeight: '800', color: colors.coinsDark },
+  pillLevel: {
+    backgroundColor: colors.heroBg,
+    borderRadius: radius.full,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  pillTextLevel: { fontSize: 10, fontWeight: '800', color: '#34D399' },
+  pillEmoji: { fontSize: 12 },
 
-  // Badges (Streak, Coins, Hearts)
-  badgeStreak: {
+  // Hero Bento Card
+  heroCard: {
+    backgroundColor: colors.heroBg,
+    borderRadius: radius.xl,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(148, 163, 184, 0.22)',
+  },
+  heroHeaderRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderColor: '#ff9600',
-    borderWidth: 2,
-    borderBottomWidth: 3,
-    borderRadius: radius.md,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    gap: 3,
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: spacing.md,
   },
-  badgeTextStreak: {
-    fontSize: fontSize.xs,
+  heroPreTitle: {
+    fontSize: 10,
     fontWeight: '800',
-    color: '#ff9600',
+    color: '#38BDF8',
+    letterSpacing: 0.8,
   },
-  badgeCoins: {
+  heroSubTitle: {
+    fontSize: 11,
+    color: '#94A3B8',
+    marginTop: 2,
+  },
+  heroBadge: {
+    backgroundColor: 'rgba(16, 185, 129, 0.18)',
+    borderColor: 'rgba(16, 185, 129, 0.35)',
+    borderWidth: 1,
+    borderRadius: radius.full,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  heroBadgeText: { fontSize: 11, fontWeight: '800', color: '#34D399' },
+  heroMainRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderColor: '#ffc800',
-    borderWidth: 2,
-    borderBottomWidth: 3,
+    marginBottom: spacing.md,
+  },
+  heroBigNum: {
+    fontSize: 38,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: -1,
+  },
+  heroBigUnit: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#94A3B8',
+  },
+  heroBreakdownCol: {
+    backgroundColor: colors.heroElevated,
     borderRadius: radius.md,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    gap: 3,
+    padding: 10,
+    gap: 5,
+    minWidth: 145,
   },
-  badgeTextCoins: {
-    fontSize: fontSize.xs,
-    fontWeight: '800',
-    color: '#cca000',
-  },
-  badgeHearts: {
+  heroBreakdownItem: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderColor: '#ff4b4b',
-    borderWidth: 2,
-    borderBottomWidth: 3,
-    borderRadius: radius.md,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    gap: 3,
+    justifyContent: 'space-between',
+    gap: 8,
   },
-  badgeTextHearts: {
-    fontSize: fontSize.xs,
-    fontWeight: '800',
-    color: '#ff4b4b',
+  heroBreakdownLabel: { fontSize: 11, color: '#94A3B8', fontWeight: '600' },
+  heroBreakdownVal: { fontSize: 11, fontWeight: '800' },
+  heroProgressTrack: {
+    height: 8,
+    backgroundColor: 'rgba(148, 163, 184, 0.2)',
+    borderRadius: 999,
+    overflow: 'hidden',
   },
-  badgeEmoji: { fontSize: 13 },
+  heroProgressFill: {
+    height: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: 999,
+  },
 
-  // Weekly Streak Tracker Card
-  streakCard: {
-    backgroundColor: '#ffffff',
+  // Bento Card
+  bentoCard: {
+    backgroundColor: '#FFFFFF',
     borderRadius: radius.lg,
-    borderWidth: 2,
-    borderColor: '#e5e5e5',
-    borderBottomWidth: 4,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: spacing.md,
   },
-  streakCardHeader: {
+  rowBetween: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: spacing.sm,
   },
-  streakTitle: {
-    fontSize: fontSize.sm,
-    fontWeight: '700',
+  cardPreTitle: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.7,
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+  },
+  cardMainTitle: {
+    fontSize: fontSize.base,
+    fontWeight: '800',
     color: colors.text,
   },
-  streakDaysText: {
-    fontSize: fontSize.xs,
-    fontWeight: '700',
-    color: '#ff9600',
+  streakHighlight: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: colors.primaryDark,
   },
+
+  macroColumns: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  macroBox: {
+    flex: 1,
+    backgroundColor: colors.bgElevated,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: 10,
+    alignItems: 'center',
+  },
+  macroLabel: { fontSize: 11, fontWeight: '800' },
+  macroValText: { fontSize: fontSize.base, fontWeight: '800', color: colors.text, marginTop: 2 },
+  macroTargetText: { fontSize: 10, color: colors.textMuted, fontWeight: '600' },
+  miniBarTrack: {
+    width: '100%',
+    height: 5,
+    backgroundColor: colors.border,
+    borderRadius: 999,
+    marginTop: 6,
+    overflow: 'hidden',
+  },
+  miniBarFill: { height: '100%', borderRadius: 999 },
+
   weekCirclesRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -375,210 +476,84 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#f2f2f2',
-    borderWidth: 2,
-    borderColor: '#e0e0e0',
+    backgroundColor: colors.bgElevated,
+    borderWidth: 1,
+    borderColor: colors.borderMid,
     alignItems: 'center',
     justifyContent: 'center',
   },
   dayCircleCompleted: {
-    backgroundColor: '#ff9600',
-    borderColor: '#cc7800',
+    backgroundColor: colors.primary,
+    borderColor: colors.primaryDark,
   },
   dayCircleToday: {
-    borderColor: '#ff9600',
+    borderColor: colors.primary,
     borderWidth: 2,
-    backgroundColor: '#fff7e6',
+    backgroundColor: colors.primarySoft,
   },
-  dayCircleEmoji: { fontSize: 13, fontWeight: '800' },
+  dayCircleEmoji: { fontSize: 12, fontWeight: '800', color: colors.primaryDark },
   dayCircleLabel: { fontSize: 10, fontWeight: '700', color: colors.textMuted },
-  dayCircleLabelToday: { color: '#ff9600', fontWeight: '800' },
+  dayCircleLabelToday: { color: colors.primaryDark, fontWeight: '800' },
 
-  // Main 3D Card
-  card3D: {
-    backgroundColor: '#ffffff',
-    borderRadius: radius.lg,
-    borderWidth: 2,
-    borderColor: '#e5e5e5',
-    borderBottomWidth: 4,
-    padding: spacing.md,
-  },
-  cardHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.xs,
-  },
-  cardPreTitle: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.8,
-    color: colors.textMuted,
-    textTransform: 'uppercase',
-  },
-  cardMainTitle: {
-    fontSize: fontSize.base,
-    fontWeight: '700',
-    color: colors.text,
-    marginTop: 2,
-  },
-  xpPill: {
-    backgroundColor: '#f1faff',
-    borderColor: '#1cb0f6',
-    borderWidth: 1.5,
-    borderRadius: radius.full,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-  xpPillText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#1cb0f6',
-  },
-
-  // Calories Display
-  calBigRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 6,
-    marginTop: 6,
-    marginBottom: spacing.xs,
-  },
-  calBigNum: {
-    fontSize: 40,
-    fontWeight: '800',
-    color: colors.text,
-    letterSpacing: -1,
-  },
-  calBigSlash: {
-    fontSize: fontSize.xl,
-    fontWeight: '400',
-    color: colors.textMuted,
-  },
-  calBigTarget: {
-    fontSize: fontSize.base,
-    fontWeight: '700',
-    color: colors.textMuted,
-  },
-
-  // 3D Progress Bar
-  progressBarTrack: {
-    height: 16,
-    backgroundColor: '#e5e5e5',
-    borderRadius: 8,
-    overflow: 'hidden',
-    marginTop: 4,
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: '#a5ed6e',
-    borderRadius: 8,
-    borderBottomWidth: 3,
-    borderColor: '#79c838',
-  },
-  progressPercentText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: colors.textMuted,
-    marginTop: 6,
-    textAlign: 'right',
-  },
-
-  // Macros Triple Column
-  macroColumns: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  macroPillBox: {
-    flex: 1,
-    backgroundColor: '#fbfbfb',
-    borderWidth: 2,
-    borderBottomWidth: 3,
-    borderRadius: radius.md,
-    padding: 10,
-    alignItems: 'center',
-  },
-  macroLabel: { fontSize: 11, fontWeight: '800', textTransform: 'uppercase' },
-  macroValText: { fontSize: fontSize.base, fontWeight: '800', color: colors.text, marginVertical: 2 },
-  macroTargetText: { fontSize: 10, color: colors.textMuted, fontWeight: '600' },
-  miniBarTrack: {
-    width: '100%',
-    height: 6,
-    backgroundColor: '#e5e5e5',
-    borderRadius: 3,
-    marginTop: 6,
-    overflow: 'hidden',
-  },
-  miniBarFill: { height: '100%', borderRadius: 3 },
-
-  // Quests Section
-  questSubtitle: { fontSize: 11, fontWeight: '700', color: '#cca000' },
+  questSubtitle: { fontSize: 11, fontWeight: '700', color: colors.coinsDark },
   questItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: colors.border,
     gap: 10,
   },
-  questEmoji: { fontSize: 24 },
+  questEmoji: { fontSize: 22 },
   questInfo: { flex: 1 },
   questName: { fontSize: fontSize.sm, fontWeight: '700', color: colors.text },
-  questReward: { fontSize: 11, fontWeight: '700', color: '#cca000', marginTop: 1 },
+  questReward: { fontSize: 11, fontWeight: '700', color: colors.coinsDark, marginTop: 1 },
   questActionBtn: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: '#ffffff',
-    borderWidth: 2,
-    borderColor: '#1cb0f6',
-    borderBottomWidth: 3,
-    borderRadius: radius.md,
+    backgroundColor: colors.bgElevated,
+    borderWidth: 1,
+    borderColor: colors.borderMid,
+    borderRadius: radius.sm,
   },
   questActionBtnDone: {
-    backgroundColor: '#a5ed6e',
-    borderColor: '#79c838',
+    backgroundColor: colors.primary,
+    borderColor: colors.primaryDark,
   },
   questActionText: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#1cb0f6',
+    color: colors.text,
   },
 
-  // Pushable Big 3D Buttons
   actionRow: {
     flexDirection: 'row',
     gap: spacing.sm,
-    marginTop: 4,
   },
-  bigButton3D: {
+  bigBtn: {
     flex: 1,
     paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  bigButtonTextPrimary: {
+  bigBtnTextPrimary: {
     fontSize: fontSize.sm,
     fontWeight: '800',
-    color: '#111111',
-    letterSpacing: 0.3,
+    color: '#FFFFFF',
   },
-  bigButtonTextAccent: {
+  bigBtnTextAccent: {
     fontSize: fontSize.sm,
     fontWeight: '800',
-    color: '#ffffff',
-    letterSpacing: 0.3,
+    color: '#FFFFFF',
   },
 
   logoutBtn: {
     alignItems: 'center',
     paddingVertical: spacing.md,
-    marginTop: spacing.xs,
   },
   logoutText: {
     fontSize: fontSize.xs,
     color: colors.textMuted,
     fontWeight: '600',
-    textDecorationLine: 'underline',
   },
 });

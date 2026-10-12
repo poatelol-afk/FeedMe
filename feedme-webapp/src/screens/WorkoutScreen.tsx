@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   TextInput, Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing, radius, fontSize, button3D } from '../lib/theme';
+import { computeProgressiveOverload } from '../lib/utils';
+import { WORKOUT_TYPES, calculateWorkoutReward } from '../lib/workout-data';
+import type { WorkoutEntry } from '../types';
 import * as db from '../lib/db';
 
 interface ExerciseSet {
@@ -22,6 +26,8 @@ const EXERCISES = [
 ];
 
 export default function WorkoutScreen() {
+  const insets = useSafeAreaInsets();
+  const [mode, setMode] = useState<'strength' | 'cardio'>('strength');
   const [selectedExId, setSelectedExId] = useState(EXERCISES[0].id);
   const ex = EXERCISES.find(e => e.id === selectedExId) ?? EXERCISES[0];
 
@@ -31,11 +37,25 @@ export default function WorkoutScreen() {
     { setNumber: 3, weightKg: ex.defaultWeight, reps: ex.targetReps[0], rpe: 8.5 },
   ]);
 
-  const [loggedSessions, setLoggedSessions] = useState<Array<{ name: string; volume: number; cals: number }>>([]);
+  const [selectedCardioId, setSelectedCardioId] = useState(WORKOUT_TYPES[0].id);
+  const [cardioMinutes, setCardioMinutes] = useState('30');
+  const [todayWorkouts, setTodayWorkouts] = useState<WorkoutEntry[]>([]);
+  const [saving, setSaving] = useState(false);
 
-  const volumeLoad = sets.reduce((s, x) => s + x.weightKg * x.reps, 0);
-  const avgRpe = sets.reduce((s, x) => s + x.rpe, 0) / Math.max(1, sets.length);
-  const shouldIncrease = sets.every(s => s.reps >= ex.targetReps[1]) && avgRpe <= 8;
+  const loadWorkouts = useCallback(async () => {
+    try {
+      const list = await db.getTodayWorkouts();
+      setTodayWorkouts(list);
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadWorkouts();
+  }, [loadWorkouts]);
+
+  const overload = computeProgressiveOverload(sets, ex.targetReps[1], ex.defaultWeight);
 
   const handleExChange = (id: string) => {
     setSelectedExId(id);
@@ -66,7 +86,8 @@ export default function WorkoutScreen() {
     ]);
   };
 
-  const logSession = async () => {
+  const logStrengthSession = async () => {
+    setSaving(true);
     const duration = sets.length * 4;
     const cals = Math.round(duration * 6.5);
     const coinsEarned = 30;
@@ -74,157 +95,229 @@ export default function WorkoutScreen() {
     try {
       await db.addWorkout({
         workoutId: ex.id,
-        workoutName: ex.name,
+        workoutName: `${ex.name} (${sets.length} sets · max ${overload.maxWeight}kg)`,
         emoji: '🏋️',
         duration,
         coinsEarned,
         caloriesBurned: cals,
       });
-    } catch (e) {
-      console.error(e);
+      await loadWorkouts();
+      Alert.alert(
+        'บันทึกเวทเทรนนิ่งสำเร็จ! ⚡',
+        `บันทึก ${ex.name} (${sets.length} เซ็ต)\n🔥 เผาผลาญ ~${cals} kcal\n🎯 เป้าครั้งหน้า: ${overload.nextWeight} kg`
+      );
+    } catch (e: any) {
+      Alert.alert('เกิดข้อผิดพลาดในการบันทึก', e?.message || 'ไม่สามารถบันทึกการออกกำลังกายได้');
+    } finally {
+      setSaving(false);
     }
+  };
 
-    setLoggedSessions([
-      ...loggedSessions,
-      { name: ex.name, volume: volumeLoad, cals },
-    ]);
-
-    Alert.alert(
-      '🎉 เลเวลอัป สำเร็จ!',
-      `บันทึก ${ex.name} ${sets.length} เซ็ต\n🔥 เผาผลาญ ~${cals} kcal\n🪙 ได้รับ +${coinsEarned} เหรียญ และ +50 XP!`
-    );
+  const logCardioSession = async () => {
+    const mins = parseInt(cardioMinutes, 10) || 0;
+    if (mins <= 0) {
+      Alert.alert('กรุณาระบุเวลาออกกำลังกาย (นาที)');
+      return;
+    }
+    setSaving(true);
+    try {
+      const reward = calculateWorkoutReward(selectedCardioId, mins, 70);
+      if (!reward) return;
+      await db.addWorkout({
+        workoutId: reward.workout.id,
+        workoutName: reward.workout.name,
+        emoji: reward.workout.emoji,
+        duration: mins,
+        coinsEarned: reward.coinsEarned,
+        caloriesBurned: reward.caloriesBurned,
+      });
+      await loadWorkouts();
+      Alert.alert(
+        'บันทึกคาร์ดิโอสำเร็จ! 🔥',
+        `${reward.workout.emoji} ${reward.workout.name} (${mins} นาที)\nเผาผลาญ -${reward.caloriesBurned} kcal · ได้รับ +${reward.coinsEarned} 🪙`
+      );
+    } catch (e: any) {
+      Alert.alert('เกิดข้อผิดพลาดในการบันทึก', e?.message || 'ไม่สามารถบันทึกได้');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={[styles.content, { paddingTop: spacing.md + insets.top }]}
+    >
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.preTitle}>🏋️ MOVE & TRAIN</Text>
-          <Text style={styles.title}>AI โค้ชยกเวท</Text>
-        </View>
-        <View style={styles.xpBadge}>
-          <Text style={styles.xpText}>⚡ +50 XP</Text>
+          <Text style={styles.preTitle}>⚡ FEEDME AI · PROGRESSIVE OVERLOAD &amp; CARDIO</Text>
+          <Text style={styles.title}>โค้ชฝึกซ้อม &amp; เผาผลาญ</Text>
         </View>
       </View>
 
-      {/* Exercise Selector Horizontal Scroll */}
-      <Text style={styles.sectionLabel}>เลือกท่าฝึกประจำวัน</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.exScroll}>
-        {EXERCISES.map((item) => (
-          <TouchableOpacity
-            key={item.id}
-            style={[styles.exChip, selectedExId === item.id && styles.exChipActive]}
-            onPress={() => handleExChange(item.id)}
-          >
-            <Text style={[styles.exChipText, selectedExId === item.id && styles.exChipTextActive]}>
-              {item.name}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {/* Sets Table Card (3D) */}
-      <View style={styles.card3D}>
-        <View style={styles.cardHeader}>
-          <View>
-            <Text style={styles.cardTitle}>{ex.name}</Text>
-            <Text style={styles.targetBadge}>เป้าหมาย: {ex.targetReps[0]}-{ex.targetReps[1]} reps ต่อเซ็ต</Text>
-          </View>
-        </View>
-
-        {/* Table column header */}
-        <View style={styles.tableHeader}>
-          <Text style={[styles.thText, { width: 34 }]}>เซ็ต</Text>
-          <Text style={[styles.thText, { flex: 1, textAlign: 'center' }]}>น้ำหนัก (kg)</Text>
-          <Text style={[styles.thText, { flex: 1, textAlign: 'center' }]}>จำนวนครั้ง (Reps)</Text>
-          <Text style={[styles.thText, { flex: 1, textAlign: 'center' }]}>RPE</Text>
-        </View>
-
-        {sets.map((set, idx) => (
-          <View key={set.setNumber} style={styles.setRow}>
-            <View style={styles.setNumBox}>
-              <Text style={styles.setNum}>{set.setNumber}</Text>
-            </View>
-            <TextInput
-              style={styles.input}
-              keyboardType="numeric"
-              value={String(set.weightKg)}
-              onChangeText={(t) => updateSet(idx, 'weightKg', parseFloat(t) || 0)}
-            />
-            <TextInput
-              style={styles.input}
-              keyboardType="numeric"
-              value={String(set.reps)}
-              onChangeText={(t) => updateSet(idx, 'reps', parseInt(t, 10) || 0)}
-            />
-            <TextInput
-              style={styles.input}
-              keyboardType="numeric"
-              value={String(set.rpe)}
-              onChangeText={(t) => updateSet(idx, 'rpe', parseFloat(t) || 0)}
-            />
-          </View>
-        ))}
-
-        <TouchableOpacity style={styles.addBtn} onPress={addSet}>
-          <Text style={styles.addBtnText}>+ เพิ่มอีก 1 เซ็ต</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* AI Progressive Overload Advice Card (3D) */}
-      <View style={[styles.card3D, shouldIncrease ? styles.cardHighlightOverload : styles.cardNormalCoach]}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-          <Text style={{ fontSize: 18 }}>{shouldIncrease ? '🚀' : '🤖'}</Text>
-          <Text style={[styles.cardTitle, { color: shouldIncrease ? '#2c6800' : colors.text }]}>
-            {shouldIncrease ? 'พร้อมเพิ่มน้ำหนักแล้ว! (Overload)' : 'AI วิเคราะห์ความก้าวหน้า'}
+      {/* Mode Switcher */}
+      <View style={styles.modeSwitchRow}>
+        <TouchableOpacity
+          style={[styles.modeBtn, mode === 'strength' && styles.modeBtnActive]}
+          onPress={() => setMode('strength')}
+        >
+          <Text style={[styles.modeBtnText, mode === 'strength' && styles.modeBtnTextActive]}>
+            🏋️ เวทเทรนนิ่ง (Overload)
           </Text>
-        </View>
-
-        <Text style={styles.adviceText}>
-          {shouldIncrease
-            ? `ยอดเยี่ยมมาก! คุณทำครบเป้า ${ex.targetReps[1]} reps ทุกเซ็ตด้วย RPE ≤ 8 ครั้งหน้าแนะนำให้เพิ่มน้ำหนักขึ้น +2.5 kg (${ex.defaultWeight + 2.5} kg) ได้เลย 🔥`
-            : `ปัจจุบันทำได้เฉลี่ย RPE ${avgRpe.toFixed(1)} ขอแนะนำให้ฝึกน้ำหนักเดิม ${ex.defaultWeight} kg ให้ครบ ${ex.targetReps[1]} ครั้งอย่างสมบูรณ์แบบก่อนเพิ่มน้ำหนัก`}
-        </Text>
-
-        <View style={styles.statsRow}>
-          <View>
-            <Text style={styles.statLabel}>Total Volume</Text>
-            <Text style={styles.statVal}>{volumeLoad} kg</Text>
-          </View>
-          <View>
-            <Text style={styles.statLabel}>Avg RPE</Text>
-            <Text style={styles.statVal}>{avgRpe.toFixed(1)}</Text>
-          </View>
-          <View>
-            <Text style={styles.statLabel}>เผาผลาญประมาณ</Text>
-            <Text style={styles.statVal}>~{Math.round(sets.length * 4 * 6.5)} kcal</Text>
-          </View>
-        </View>
-
-        {/* Big 3D Duolingo Button */}
-        <TouchableOpacity style={[styles.saveBtn3D, button3D.primary]} onPress={logSession}>
-          <Text style={styles.saveBtnText}>บันทึกการออกกำลังกาย (+30 🪙 & 50 XP)</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.modeBtn, mode === 'cardio' && styles.modeBtnActive]}
+          onPress={() => setMode('cardio')}
+        >
+          <Text style={[styles.modeBtnText, mode === 'cardio' && styles.modeBtnTextActive]}>
+            🏃 คาร์ดิโอ &amp; กีฬา
+          </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Completed History Today */}
-      {loggedSessions.length > 0 && (
-        <View style={styles.card3D}>
-          <Text style={[styles.cardTitle, { marginBottom: 10 }]}>🏆 บันทึกสำเร็จแล้ววันนี้</Text>
-          {loggedSessions.map((s, idx) => (
-            <View key={idx} style={styles.loggedItem}>
+      {mode === 'strength' ? (
+        <>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.exScroll}>
+            {EXERCISES.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={[styles.exChip, selectedExId === item.id && styles.exChipActive]}
+                onPress={() => handleExChange(item.id)}
+              >
+                <Text style={[styles.exChipText, selectedExId === item.id && styles.exChipTextActive]}>
+                  {item.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          <View style={styles.bentoCard}>
+            <View style={styles.cardHeader}>
               <View>
-                <Text style={{ fontSize: 14, color: colors.text, fontWeight: '700' }}>
-                  🏋️ {s.name}
+                <Text style={styles.cardTitle}>{ex.name}</Text>
+                <Text style={styles.targetBadge}>เป้าหมาย: {ex.targetReps[0]}–{ex.targetReps[1]} reps ต่อเซ็ต</Text>
+              </View>
+            </View>
+
+            <View style={styles.tableHeader}>
+              <Text style={[styles.thText, { width: 34 }]}>เซ็ต</Text>
+              <Text style={[styles.thText, { flex: 1, textAlign: 'center' }]}>น้ำหนักจริง (kg)</Text>
+              <Text style={[styles.thText, { flex: 1, textAlign: 'center' }]}>จำนวนครั้ง (Reps)</Text>
+              <Text style={[styles.thText, { flex: 1, textAlign: 'center' }]}>RPE</Text>
+            </View>
+
+            {sets.map((set, idx) => (
+              <View key={set.setNumber} style={styles.setRow}>
+                <View style={styles.setNumBox}>
+                  <Text style={styles.setNum}>{set.setNumber}</Text>
+                </View>
+                <TextInput
+                  style={styles.input}
+                  keyboardType="numeric"
+                  value={String(set.weightKg)}
+                  onChangeText={(t) => updateSet(idx, 'weightKg', parseFloat(t) || 0)}
+                />
+                <TextInput
+                  style={styles.input}
+                  keyboardType="numeric"
+                  value={String(set.reps)}
+                  onChangeText={(t) => updateSet(idx, 'reps', parseInt(t, 10) || 0)}
+                />
+                <TextInput
+                  style={styles.input}
+                  keyboardType="numeric"
+                  value={String(set.rpe)}
+                  onChangeText={(t) => updateSet(idx, 'rpe', parseFloat(t) || 0)}
+                />
+              </View>
+            ))}
+
+            <TouchableOpacity style={styles.addBtn} onPress={addSet}>
+              <Text style={styles.addBtnText}>+ เพิ่มอีก 1 เซ็ต</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* AI Progressive Overload Advice Card */}
+          <View style={styles.heroOverloadCard}>
+            <Text style={styles.overloadBadge}>
+              {overload.shouldIncrease ? '🚀 PROGRESSIVE OVERLOAD UNLOCKED' : '🎯 MAINTAIN & BUILD FORM'}
+            </Text>
+            <Text style={styles.overloadTitle}>
+              {overload.shouldIncrease
+                ? `เพิ่มน้ำหนักครั้งหน้า +2.5 kg → ${overload.nextWeight} kg`
+                : `รักษาน้ำหนักฝึกที่ ${overload.maxWeight} kg จนครบ ${ex.targetReps[1]} reps ทุกเซ็ต`}
+            </Text>
+            <Text style={styles.overloadDesc}>
+              {overload.shouldIncrease
+                ? `คุณทำครบ ${ex.targetReps[1]} reps ทุกเซ็ตที่น้ำหนักสูงสุด ${overload.maxWeight} kg ด้วย RPE เฉลี่ย ${overload.avgRpe}`
+                : `Volume รวม ${overload.totalVolume} kg · RPE เฉลี่ย ${overload.avgRpe}`}
+            </Text>
+
+            <TouchableOpacity
+              style={[styles.saveBtn, button3D.primary, saving && { opacity: 0.6 }]}
+              onPress={logStrengthSession}
+              disabled={saving}
+            >
+              <Text style={styles.saveBtnText}>
+                {saving ? 'กำลังบันทึก...' : 'บันทึกเซสชันเวทเทรนนิ่ง (+30 🪙)'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      ) : (
+        <View style={styles.bentoCard}>
+          <Text style={styles.cardTitle}>เลือกกิจกรรมคาร์ดิโอ / กีฬา</Text>
+          <View style={styles.cardioGrid}>
+            {WORKOUT_TYPES.slice(0, 8).map((w) => (
+              <TouchableOpacity
+                key={w.id}
+                style={[styles.cardioChip, selectedCardioId === w.id && styles.cardioChipActive]}
+                onPress={() => setSelectedCardioId(w.id)}
+              >
+                <Text style={{ fontSize: 22 }}>{w.emoji}</Text>
+                <Text style={[styles.cardioChipName, selectedCardioId === w.id && { color: colors.primaryDark }]}>
+                  {w.name}
                 </Text>
-                <Text style={{ fontSize: 11, color: colors.textMuted, fontWeight: '600', marginTop: 2 }}>
-                  Volume: {s.volume} kg
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <View style={styles.durationRow}>
+            <Text style={styles.cardTitle}>ระยะเวลา (นาที):</Text>
+            <TextInput
+              style={styles.durationInput}
+              keyboardType="numeric"
+              value={cardioMinutes}
+              onChangeText={setCardioMinutes}
+            />
+          </View>
+
+          <TouchableOpacity
+            style={[styles.saveBtn, button3D.primary, saving && { opacity: 0.6 }]}
+            onPress={logCardioSession}
+            disabled={saving}
+          >
+            <Text style={styles.saveBtnText}>บันทึกคาร์ดิโอ &amp; หักลบแคลอรีสุทธิ</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Completed Sessions Today */}
+      {todayWorkouts.length > 0 && (
+        <View style={styles.bentoCard}>
+          <Text style={[styles.cardTitle, { marginBottom: 10 }]}>🏆 เซสชันที่บันทึกแล้ววันนี้</Text>
+          {todayWorkouts.map((s, idx) => (
+            <View key={s.id || idx} style={styles.loggedItem}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 13, color: colors.text, fontWeight: '700' }}>
+                  {s.emoji} {s.workoutName}
+                </Text>
+                <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
+                  {s.duration} นาที · เผาผลาญ -{s.caloriesBurned} kcal
                 </Text>
               </View>
-              <View style={styles.rewardTag}>
-                <Text style={styles.rewardTagText}>-{s.cals} kcal · +30 🪙</Text>
-              </View>
+              <Text style={styles.rewardTagText}>+{s.coinsEarned} 🪙</Text>
             </View>
           ))}
         </View>
@@ -241,13 +334,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.xs,
   },
   preTitle: {
     fontSize: 10,
     fontWeight: '800',
-    letterSpacing: 0.8,
-    color: colors.textMuted,
+    letterSpacing: 0.7,
+    color: colors.primaryDark,
   },
   title: {
     fontSize: fontSize.xl,
@@ -255,74 +347,67 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginTop: 2,
   },
-  xpBadge: {
-    backgroundColor: '#ffffff',
-    borderColor: '#ce82ff',
-    borderWidth: 2,
-    borderBottomWidth: 3,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: radius.md,
+
+  modeSwitchRow: {
+    flexDirection: 'row',
+    gap: 8,
   },
-  xpText: {
+  modeBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: radius.md,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+  },
+  modeBtnActive: {
+    backgroundColor: colors.heroBg,
+    borderColor: colors.heroBg,
+  },
+  modeBtnText: {
     fontSize: fontSize.xs,
+    fontWeight: '700',
+    color: colors.textSecondary,
+  },
+  modeBtnTextActive: {
+    color: '#FFFFFF',
     fontWeight: '800',
-    color: '#a559d9',
   },
 
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: colors.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  exScroll: { marginBottom: spacing.xs },
+  exScroll: { marginBottom: 4 },
   exChip: {
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: 9,
     borderRadius: radius.md,
-    backgroundColor: '#ffffff',
-    borderWidth: 2,
-    borderColor: '#e5e5e5',
-    borderBottomWidth: 3,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: colors.border,
     marginRight: 8,
   },
   exChipActive: {
-    backgroundColor: '#1cb0f6',
-    borderColor: '#1899d6',
+    backgroundColor: colors.primarySoft,
+    borderColor: colors.primary,
   },
   exChipText: {
     fontSize: fontSize.xs,
-    color: colors.text,
+    color: colors.textSecondary,
     fontWeight: '700',
   },
   exChipTextActive: {
-    color: '#ffffff',
+    color: colors.primaryDark,
     fontWeight: '800',
   },
 
-  card3D: {
-    backgroundColor: '#ffffff',
+  bentoCard: {
+    backgroundColor: '#FFFFFF',
     borderRadius: radius.lg,
-    borderWidth: 2,
-    borderColor: '#e5e5e5',
-    borderBottomWidth: 4,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: spacing.md,
   },
-  cardHighlightOverload: {
-    borderColor: '#a5ed6e',
-    backgroundColor: '#f6fff0',
-  },
-  cardNormalCoach: {
-    borderColor: '#bfe9ff',
-  },
-
   cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
   cardTitle: {
     fontSize: fontSize.base,
@@ -331,7 +416,7 @@ const styles = StyleSheet.create({
   },
   targetBadge: {
     fontSize: 11,
-    color: '#1cb0f6',
+    color: colors.accent,
     fontWeight: '700',
     marginTop: 2,
   },
@@ -352,10 +437,10 @@ const styles = StyleSheet.create({
   setRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: colors.bgElevated,
     borderRadius: radius.md,
-    borderWidth: 1.5,
-    borderColor: '#e5e5e5',
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: 8,
     marginBottom: 8,
     gap: 8,
@@ -364,9 +449,9 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#ffffff',
-    borderWidth: 1.5,
-    borderColor: '#e0e0e0',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: colors.borderMid,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -377,10 +462,10 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#FFFFFF',
     borderRadius: radius.sm,
-    borderWidth: 1.5,
-    borderColor: '#d6d6d6',
+    borderWidth: 1,
+    borderColor: colors.borderMid,
     color: colors.text,
     fontSize: fontSize.sm,
     fontWeight: '700',
@@ -389,8 +474,8 @@ const styles = StyleSheet.create({
   },
 
   addBtn: {
-    borderWidth: 2,
-    borderColor: '#1cb0f6',
+    borderWidth: 1,
+    borderColor: colors.accent,
     borderStyle: 'dashed',
     borderRadius: radius.md,
     paddingVertical: 10,
@@ -399,44 +484,88 @@ const styles = StyleSheet.create({
   },
   addBtnText: {
     fontSize: fontSize.xs,
-    color: '#1cb0f6',
+    color: colors.accent,
     fontWeight: '800',
   },
 
-  adviceText: {
-    fontSize: fontSize.xs,
-    color: colors.text,
-    lineHeight: 18,
-    fontWeight: '600',
-    marginBottom: 12,
+  heroOverloadCard: {
+    backgroundColor: colors.heroBg,
+    borderRadius: radius.xl,
+    padding: spacing.lg,
   },
-  statsRow: {
+  overloadBadge: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#34D399',
+    letterSpacing: 0.8,
+    marginBottom: 4,
+  },
+  overloadTitle: {
+    fontSize: fontSize.base,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  overloadDesc: {
+    fontSize: 12,
+    color: '#94A3B8',
+    marginBottom: spacing.md,
+  },
+
+  cardioGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#ffffff',
-    borderRadius: radius.md,
-    borderWidth: 1.5,
-    borderColor: '#e5e5e5',
-    padding: 10,
-    marginBottom: 14,
+    flexWrap: 'wrap',
+    gap: 8,
+    marginVertical: spacing.sm,
   },
-  statLabel: { fontSize: 10, color: colors.textMuted, fontWeight: '700' },
-  statVal: {
-    fontSize: fontSize.sm,
+  cardioChip: {
+    width: '48%',
+    backgroundColor: colors.bgElevated,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  cardioChipActive: {
+    backgroundColor: colors.primarySoft,
+    borderColor: colors.primary,
+  },
+  cardioChipName: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.text,
+    flexShrink: 1,
+  },
+  durationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginVertical: spacing.sm,
+  },
+  durationInput: {
+    width: 100,
+    backgroundColor: colors.bgElevated,
+    borderWidth: 1,
+    borderColor: colors.borderMid,
+    borderRadius: radius.sm,
+    paddingVertical: 8,
+    textAlign: 'center',
+    fontSize: fontSize.base,
     fontWeight: '800',
     color: colors.text,
-    marginTop: 2,
   },
 
-  saveBtn3D: {
+  saveBtn: {
     paddingVertical: 14,
     alignItems: 'center',
   },
   saveBtnText: {
-    color: '#111111',
+    color: '#FFFFFF',
     fontWeight: '800',
     fontSize: fontSize.sm,
-    letterSpacing: 0.3,
   },
 
   loggedItem: {
@@ -445,19 +574,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
-  },
-  rewardTag: {
-    backgroundColor: '#fff7e6',
-    borderColor: '#ff9600',
-    borderWidth: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: radius.sm,
+    borderTopColor: colors.border,
   },
   rewardTagText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
-    color: '#ff9600',
+    color: colors.coinsDark,
   },
 });

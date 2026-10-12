@@ -26,7 +26,7 @@ export default function AuthScreen() {
       } else {
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        Alert.alert('สมัครสมาชิกสำเร็จ!', 'กรุณาตรวจสอบ Email เพื่อยืนยัน หรือเข้าสู่ระบบได้ทันทีหากเปิด auto-confirm ไว้');
+        Alert.alert('สมัครสมาชิกสำเร็จ!', 'กรุณาตรวจสอบ Email เพื่อยืนยัน หรือเข้าสู่ระบบได้ทันที');
       }
     } catch (e: any) {
       Alert.alert('เกิดข้อผิดพลาด', e.message);
@@ -41,18 +41,17 @@ export default function AuthScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView contentContainerStyle={styles.inner} keyboardShouldPersistTaps="handled">
-        {/* Duolingo Friendly Logo */}
+        {/* Modern Bento Athletic Brand Hero */}
         <View style={styles.logoBox}>
-          <View style={styles.mascotCircle}>
-            <Text style={styles.logoEmoji}>🦉</Text>
+          <View style={styles.brandBadge}>
+            <Text style={styles.logoEmoji}>⚡</Text>
           </View>
-          <Text style={styles.logoText}>FeedMe</Text>
-          <Text style={styles.logoSub}>สนุกกับการดูแลหุ่นและสุขภาพทุกวัน!</Text>
+          <Text style={styles.logoText}>FEEDME AI</Text>
+          <Text style={styles.logoSub}>Smart Nutrition &amp; Progressive Overload Coach</Text>
         </View>
 
-        {/* 3D Container Card */}
-        <View style={styles.card3D}>
-          {/* Tab switcher */}
+        {/* Bento Auth Card */}
+        <View style={styles.bentoCard}>
           <View style={styles.tabRow}>
             <TouchableOpacity
               style={[styles.tab, mode === 'login' && styles.tabActive]}
@@ -72,14 +71,13 @@ export default function AuthScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Form */}
           <View style={styles.form}>
             <Text style={styles.label}>EMAIL ADDRESS</Text>
             <TextInput
               style={styles.input}
               value={email}
               onChangeText={setEmail}
-              placeholder="user@example.com"
+              placeholder="athlete@example.com"
               placeholderTextColor={colors.textMuted}
               keyboardType="email-address"
               autoCapitalize="none"
@@ -96,14 +94,14 @@ export default function AuthScreen() {
             />
 
             <TouchableOpacity
-              style={[styles.btn3D, button3D.primary, loading && { opacity: 0.6 }]}
+              style={[styles.btnPrimary, button3D.primary, loading && { opacity: 0.6 }]}
               onPress={handleAuth}
               disabled={loading}
             >
               {loading
-                ? <ActivityIndicator color="#111111" />
+                ? <ActivityIndicator color="#FFFFFF" />
                 : <Text style={styles.btnText}>
-                    {mode === 'login' ? 'เข้าสู่ระบบเลย ✨' : 'สร้างบัญชีผู้ใช้ใหม่ 🚀'}
+                    {mode === 'login' ? 'เข้าสู่ระบบ ⚡' : 'สร้างบัญชีนักกีฬาใหม่ 🚀'}
                   </Text>
               }
             </TouchableOpacity>
@@ -119,44 +117,40 @@ const styles = StyleSheet.create({
   inner: { flexGrow: 1, justifyContent: 'center', padding: spacing.lg },
 
   logoBox: { alignItems: 'center', marginBottom: spacing.xl },
-  mascotCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#ffffff',
-    borderWidth: 3,
-    borderColor: '#a5ed6e',
-    borderBottomWidth: 5,
+  brandBadge: {
+    width: 72,
+    height: 72,
+    borderRadius: 20,
+    backgroundColor: colors.heroBg,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.sm,
   },
-  logoEmoji: { fontSize: 44 },
+  logoEmoji: { fontSize: 36 },
   logoText: {
-    fontSize: 34,
-    fontWeight: '800',
+    fontSize: 30,
+    fontWeight: '900',
     color: colors.text,
     letterSpacing: -0.5,
   },
   logoSub: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
+    fontSize: fontSize.xs,
+    color: colors.textSecondary,
     marginTop: 4,
     fontWeight: '600',
   },
 
-  card3D: {
-    backgroundColor: '#ffffff',
+  bentoCard: {
+    backgroundColor: '#FFFFFF',
     borderRadius: radius.xl,
-    borderWidth: 2,
-    borderColor: '#e5e5e5',
-    borderBottomWidth: 5,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: spacing.lg,
   },
 
   tabRow: {
     flexDirection: 'row',
-    backgroundColor: '#f2f2f2',
+    backgroundColor: colors.bgElevated,
     borderRadius: radius.md,
     padding: 4,
     marginBottom: spacing.lg,
@@ -168,9 +162,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
   },
   tabActive: {
-    backgroundColor: '#ffffff',
-    borderWidth: 1.5,
-    borderColor: '#d6d6d6',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: colors.borderMid,
   },
   tabText: {
     fontSize: fontSize.xs,
@@ -191,26 +185,25 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   input: {
-    backgroundColor: '#ffffff',
-    borderWidth: 2,
-    borderColor: '#d6d6d6',
+    backgroundColor: colors.bgElevated,
+    borderWidth: 1,
+    borderColor: colors.borderMid,
     borderRadius: radius.md,
     paddingHorizontal: 14,
     paddingVertical: 10,
     color: colors.text,
     fontSize: fontSize.base,
-    fontWeight: '700',
+    fontWeight: '600',
   },
 
-  btn3D: {
+  btnPrimary: {
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: spacing.md,
   },
   btnText: {
-    color: '#111111',
+    color: '#FFFFFF',
     fontWeight: '800',
     fontSize: fontSize.sm,
-    letterSpacing: 0.3,
   },
 });

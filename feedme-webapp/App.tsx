@@ -20,12 +20,11 @@ import ProfileScreen  from './src/screens/ProfileScreen';
 const Tab   = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-// ── Duolingo Style Tab Bar Icons ─────────────────────────
 const TAB_ICONS: Record<string, string> = {
-  Home: '🏠',
-  Log: '📝',
-  Workout: '💪',
-  Shop: '🛒',
+  Home: '⚡',
+  Log: '🍱',
+  Workout: '🏋️',
+  Shop: '🎁',
   Profile: '👤',
 };
 
@@ -34,16 +33,18 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
     <View style={{
       alignItems: 'center',
       justifyContent: 'center',
-      transform: [{ scale: focused ? 1.15 : 1.0 }],
+      paddingHorizontal: 10,
+      paddingVertical: 2,
+      borderRadius: 999,
+      backgroundColor: focused ? colors.primarySoft : 'transparent',
     }}>
-      <Text style={{ fontSize: 22, opacity: focused ? 1 : 0.65 }}>
+      <Text style={{ fontSize: 19, opacity: focused ? 1 : 0.65 }}>
         {TAB_ICONS[name]}
       </Text>
     </View>
   );
 }
 
-// ── Main tabs (แสดงหลัง login) ─────────────────────────
 function MainTabs() {
   const insets = useSafeAreaInsets();
 
@@ -52,43 +53,42 @@ function MainTabs() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#ffffff',
-          borderTopColor: '#e5e5e5',
-          borderTopWidth: 2,
-          paddingTop: 8,
+          backgroundColor: '#FFFFFF',
+          borderTopColor: colors.border,
+          borderTopWidth: 1,
+          paddingTop: 6,
           paddingBottom: Math.max(insets.bottom, 8),
           height: 64 + insets.bottom,
         },
-        tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: '#999999',
+        tabBarActiveTintColor: colors.primaryDark,
+        tabBarInactiveTintColor: colors.textMuted,
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: '700',
           marginBottom: 4,
-          letterSpacing: 0.3,
+          letterSpacing: 0.2,
         },
         tabBarIcon: ({ focused }) => (
           <TabIcon name={route.name} focused={focused} />
         ),
       })}
     >
-      <Tab.Screen name="Home"    component={HomeScreen}    options={{ title: 'หน้าหลัก' }} />
-      <Tab.Screen name="Log"     component={LogScreen}     options={{ title: 'บันทึกอาหาร' }} />
-      <Tab.Screen name="Workout" component={WorkoutScreen} options={{ title: 'ออกกำลัง' }} />
-      <Tab.Screen name="Shop"    component={ShopScreen}    options={{ title: 'ร้านค้า' }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'โปรไฟล์' }} />
+      <Tab.Screen name="Home"    component={HomeScreen}    options={{ title: 'Today' }} />
+      <Tab.Screen name="Log"     component={LogScreen}     options={{ title: 'Food AI' }} />
+      <Tab.Screen name="Workout" component={WorkoutScreen} options={{ title: 'Train' }} />
+      <Tab.Screen name="Shop"    component={ShopScreen}    options={{ title: 'Rewards' }} />
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Body' }} />
     </Tab.Navigator>
   );
 }
 
-// ── Root navigator — เช็ค auth state ──────────────────
 function RootNav() {
   const { session, loading } = useAuth();
 
   if (loading) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator color={colors.accent} size="large" />
+        <ActivityIndicator color={colors.primary} size="large" />
       </View>
     );
   }
@@ -103,7 +103,6 @@ function RootNav() {
   );
 }
 
-// ── App entry point ────────────────────────────────────
 export default function App() {
   return (
     <SafeAreaProvider>

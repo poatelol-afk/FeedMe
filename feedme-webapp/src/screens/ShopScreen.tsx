@@ -4,9 +4,9 @@ import {
   Alert, RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, spacing, radius, fontSize, button3D } from '../lib/theme';
+import { colors, spacing, radius, fontSize, cardBento, cardHeroBento, buttonBento } from '../lib/theme';
 import { SHOP_ITEMS } from '../lib/shop-data';
-import type { PurchaseRecord, ShopItem } from '../types';
+import type { PurchaseRecord } from '../types';
 import * as db from '../lib/db';
 
 const POWER_UPS = [
@@ -26,9 +26,9 @@ const POWER_UPS = [
   },
   {
     id: 'heart-refill',
-    name: 'Heart Refill',
-    emoji: '💖',
-    description: 'ฟื้นฟูพลังชีวิตและหัวใจให้เต็ม 5 ดวงทันที',
+    name: 'Recovery Boost',
+    emoji: '⚡',
+    description: 'เพิ่มแต้มโบนัสสำหรับเป้าหมายการฟื้นฟูร่างกายประจำวัน',
     coinPrice: 50,
   },
 ];
@@ -84,8 +84,9 @@ export default function ShopScreen() {
       } else {
         Alert.alert('เกิดข้อผิดพลาดในการแลกรางวัล');
       }
-    } catch (e: any) {
-      Alert.alert('เกิดข้อผิดพลาด', e.message);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'เกิดข้อผิดพลาด';
+      Alert.alert('เกิดข้อผิดพลาด', message);
     }
   };
 
@@ -103,16 +104,18 @@ export default function ShopScreen() {
         </View>
       </View>
 
-      {/* Coins Balance 3D Card */}
+      {/* Coins Balance Dark Hero Bento Card */}
       <View style={styles.balanceCard}>
         <View style={styles.balanceRow}>
           <Text style={styles.balanceEmoji}>🪙</Text>
           <View>
-            <Text style={styles.balanceSub}>เหรียญทองที่คุณมี</Text>
-            <Text style={styles.balanceNum}>{coins} <Text style={{ fontSize: fontSize.base }}>Coins</Text></Text>
+            <Text style={styles.balanceSub}>เหรียญสะสมที่คุณมี</Text>
+            <Text style={styles.balanceNum}>
+              {coins} <Text style={styles.balanceUnit}>Coins</Text>
+            </Text>
           </View>
         </View>
-        <Text style={styles.balanceHint}>สะสมเหรียญได้จากการทานอาหารครบเป้าและยกเวท!</Text>
+        <Text style={styles.balanceHint}>สะสมเหรียญได้จากการทานอาหารครบเป้าและบันทึกออกกำลังกาย!</Text>
       </View>
 
       {/* Tabs */}
@@ -146,10 +149,10 @@ export default function ShopScreen() {
                 <Text style={styles.shopItemDesc}>{item.description}</Text>
               </View>
               <TouchableOpacity
-                style={[styles.buyBtn3D, button3D.gold]}
+                style={[styles.buyBtn, buttonBento.gold]}
                 onPress={() => handleBuy(item)}
               >
-                <Text style={styles.buyBtnText}>{item.coinPrice} 🪙</Text>
+                <Text style={styles.buyBtnTextDark}>{item.coinPrice} 🪙</Text>
               </TouchableOpacity>
             </View>
           ))}
@@ -167,10 +170,10 @@ export default function ShopScreen() {
                 <Text style={styles.shopItemDesc}>{item.description} (~{item.calories} kcal)</Text>
               </View>
               <TouchableOpacity
-                style={[styles.buyBtn3D, button3D.primary]}
+                style={[styles.buyBtn, buttonBento.primary]}
                 onPress={() => handleBuy(item)}
               >
-                <Text style={styles.buyBtnText}>{item.coinPrice} 🪙</Text>
+                <Text style={styles.buyBtnTextLight}>{item.coinPrice} 🪙</Text>
               </TouchableOpacity>
             </View>
           ))}
@@ -206,7 +209,7 @@ const styles = StyleSheet.create({
   preTitle: {
     fontSize: 10,
     fontWeight: '800',
-    letterSpacing: 0.8,
+    letterSpacing: 1,
     color: colors.textMuted,
   },
   title: {
@@ -217,18 +220,15 @@ const styles = StyleSheet.create({
   },
 
   balanceCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: radius.lg,
-    borderWidth: 2,
-    borderColor: '#ffc800',
-    borderBottomWidth: 4,
+    ...cardHeroBento,
     padding: spacing.md,
   },
   balanceRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   balanceEmoji: { fontSize: 36 },
-  balanceSub: { fontSize: fontSize.xs, color: colors.textMuted, fontWeight: '700' },
-  balanceNum: { fontSize: 32, fontWeight: '800', color: '#b38600', letterSpacing: -1 },
-  balanceHint: { fontSize: 11, color: colors.textMuted, fontWeight: '600', marginTop: 8 },
+  balanceSub: { fontSize: fontSize.xs, color: '#94A3B8', fontWeight: '700' },
+  balanceNum: { fontSize: 32, fontWeight: '800', color: '#F59E0B', letterSpacing: -1 },
+  balanceUnit: { fontSize: fontSize.base, color: '#F8FAFC', fontWeight: '700' },
+  balanceHint: { fontSize: 11, color: '#CBD5E1', fontWeight: '600', marginTop: 8 },
 
   tabRow: {
     flexDirection: 'row',
@@ -238,15 +238,14 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     borderRadius: radius.md,
-    backgroundColor: '#ffffff',
-    borderWidth: 2,
-    borderColor: '#e5e5e5',
-    borderBottomWidth: 3,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
     alignItems: 'center',
   },
   tabBtnActive: {
-    borderColor: '#1cb0f6',
-    backgroundColor: '#f1faff',
+    borderColor: colors.aiBlue,
+    backgroundColor: colors.aiBlueSoft,
   },
   tabBtnText: {
     fontSize: fontSize.xs,
@@ -254,17 +253,13 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   tabBtnTextActive: {
-    color: '#1cb0f6',
+    color: colors.aiBlue,
     fontWeight: '800',
   },
 
   itemsGrid: { gap: spacing.sm },
   shopItemCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: radius.lg,
-    borderWidth: 2,
-    borderColor: '#e5e5e5',
-    borderBottomWidth: 4,
+    ...cardBento,
     padding: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
@@ -274,24 +269,25 @@ const styles = StyleSheet.create({
   shopItemInfo: { flex: 1 },
   shopItemTitle: { fontSize: fontSize.sm, fontWeight: '800', color: colors.text },
   shopItemDesc: { fontSize: 11, color: colors.textMuted, fontWeight: '600', marginTop: 2 },
-  buyBtn3D: {
+  buyBtn: {
     paddingHorizontal: 14,
     paddingVertical: 10,
-    minWidth: 75,
+    minWidth: 78,
     alignItems: 'center',
   },
-  buyBtnText: {
+  buyBtnTextDark: {
     fontSize: fontSize.xs,
     fontWeight: '800',
-    color: '#111111',
+    color: '#0F172A',
+  },
+  buyBtnTextLight: {
+    fontSize: fontSize.xs,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
 
   historyCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: radius.lg,
-    borderWidth: 2,
-    borderColor: '#e5e5e5',
-    borderBottomWidth: 4,
+    ...cardBento,
     padding: spacing.md,
   },
   historyTitle: { fontSize: fontSize.sm, fontWeight: '800', color: colors.text, marginBottom: spacing.xs },
@@ -300,7 +296,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 8,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: '#F1F5F9',
   },
   historyItemName: { fontSize: fontSize.xs, fontWeight: '700', color: colors.text },
   historyItemCoins: { fontSize: fontSize.xs, fontWeight: '800', color: colors.danger },

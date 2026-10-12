@@ -8,12 +8,19 @@ import { colors, spacing, radius, fontSize, button3D } from '../lib/theme';
 import { FOODS } from '../lib/food-data';
 import type { DiaryEntry, FoodItem } from '../types';
 import * as db from '../lib/db';
-import BleScaleCard from '../components/BleScaleCard';
+
+const SMART_PORTIONS = [
+  { grams: 100, label: '1 ทัพพี (100g)' },
+  { grams: 150, label: 'จานเล็ก (150g)' },
+  { grams: 200, label: '1 จานปกติ (200g)' },
+  { grams: 300, label: 'พิเศษ/จัมโบ้ (300g)' },
+];
 
 export default function LogScreen() {
   const insets = useSafeAreaInsets();
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedFood, setSelectedFood] = useState<FoodItem>(FOODS[0]);
-  const [weightGrams, setWeightGrams] = useState<number>(150);
+  const [weightGrams, setWeightGrams] = useState<number>(200);
   const [todayEntries, setTodayEntries] = useState<DiaryEntry[]>([]);
   const [saving, setSaving] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -30,10 +37,13 @@ export default function LogScreen() {
   }, []);
 
   useEffect(() => {
-    loadEntries();
+    void loadEntries();
   }, [loadEntries]);
 
-  // Live macro calculation based on selected food & weight
+  const filteredFoods = searchQuery.trim()
+    ? FOODS.filter(f => f.name.toLowerCase().includes(searchQuery.trim().toLowerCase()))
+    : FOODS;
+
   const multiplier = weightGrams / 100;
   const calculatedKcal = Math.round(selectedFood.kcal * multiplier);
   const calculatedProtein = Math.round(selectedFood.protein * multiplier * 10) / 10;
@@ -42,7 +52,7 @@ export default function LogScreen() {
 
   const handleAddLog = async () => {
     if (weightGrams <= 0) {
-      Alert.alert('กรุณากรอกน้ำหนักอาหาร');
+      Alert.alert('กรุณาระบุปริมาณอาหาร (กรัม)');
       return;
     }
     setSaving(true);
@@ -57,14 +67,17 @@ export default function LogScreen() {
         fat: calculatedFat,
       });
 
-      // Earn reward coins & update streak
-      await db.earnCoins(5);
+      await db.earnCoins(10);
       await db.updateStreak();
+      await db.updateQuestProgress('food', 1);
 
-      Alert.alert('บันทึกอาหารสำเร็จ! 🎉', `เพิ่ม ${selectedFood.emoji} ${selectedFood.name} (${weightGrams}g)\n+${calculatedKcal} kcal\n🪙 ได้รับ +5 เหรียญ และ +10 XP!`);
+      Alert.alert(
+        'บันทึกมื้ออาหารสำเร็จ! ⚡',
+        `เพิ่ม ${selectedFood.emoji} ${selectedFood.name} (${weightGrams}g)\n+${calculatedKcal} kcal (P ${calculatedProtein}g · C ${calculatedCarbs}g · F ${calculatedFat}g)`
+      );
       await loadEntries();
     } catch (e: any) {
-      Alert.alert('เกิดข้อผิดพลาด', e.message || 'ไม่สามารถบันทึกได้');
+      Alert.alert('เกิดข้อผิดพลาด', e?.message || 'ไม่สามารถบันทึกได้');
     } finally {
       setSaving(false);
     }
@@ -80,35 +93,36 @@ export default function LogScreen() {
     }
   };
 
-  const handleWeightFromScale = (grams: number) => {
-    setWeightGrams(grams);
-  };
-
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={[styles.content, { paddingTop: spacing.md + insets.top }]}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadEntries(); }} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); void loadEntries(); }} tintColor={colors.primary} />}
     >
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.preTitle}>🥗 FOOD LOG & SCALE</Text>
-          <Text style={styles.title}>บันทึกมื้ออาหาร</Text>
+          <Text style={styles.preTitle}>⚡ FEEDME AI · SMART FOOD LOGGER</Text>
+          <Text style={styles.title}>บันทึกอาหาร &amp; สัดส่วนอัจฉริยะ</Text>
         </View>
         <View style={styles.xpBadge}>
-          <Text style={styles.xpText}>⚡ +10 XP</Text>
+          <Text style={styles.xpText}>+10 🪙</Text>
         </View>
       </View>
 
-      {/* BLE Scale Card */}
-      <BleScaleCard onWeightReceived={handleWeightFromScale} />
+      {/* Search & Dish Presets Bento Card */}
+      <View style={styles.bentoCard}>
+        <Text style={styles.sectionTitle}>1. ค้นหาหรือเลือกจานอาหาร</Text>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="ค้นหาชื่อเมนูอาหาร เช่น อกไก่, ข้าวกล้อง, แซลมอน..."
+          placeholderTextColor={colors.textMuted}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
 
-      {/* Food Selection 3D Card */}
-      <View style={styles.card3D}>
-        <Text style={styles.sectionTitle}>เลือกเมนูอาหารยอดนิยม</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.foodScroll}>
-          {FOODS.map((item) => (
+          {filteredFoods.map((item) => (
             <TouchableOpacity
               key={item.id}
               style={[
@@ -121,38 +135,39 @@ export default function LogScreen() {
               <Text style={[styles.foodName, selectedFood.id === item.id && styles.foodNameActive]}>
                 {item.name}
               </Text>
-              <Text style={[styles.foodKcalSub, selectedFood.id === item.id && styles.foodKcalSubActive]}>
-                {item.kcal} kcal/100g
+              <Text style={styles.foodKcalSub}>
+                {item.kcal} kcal / 100g
               </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
 
-        {/* Portion Adjuster */}
+        {/* Smart Portion Selector (No Hardware Scale Needed) */}
         <View style={styles.portionSection}>
-          <Text style={styles.portionLabel}>น้ำหนักอาหาร (กรัม):</Text>
+          <Text style={styles.sectionTitle}>2. เลือกปริมาณ (ทัพพี / จาน / กรัม)</Text>
+          <View style={styles.presetGrid}>
+            {SMART_PORTIONS.map((p) => (
+              <TouchableOpacity
+                key={p.grams}
+                style={[styles.presetBtn, weightGrams === p.grams && styles.presetBtnActive]}
+                onPress={() => setWeightGrams(p.grams)}
+              >
+                <Text style={[styles.presetBtnText, weightGrams === p.grams && styles.presetBtnTextActive]}>
+                  {p.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
           <View style={styles.weightInputRow}>
+            <Text style={styles.portionLabel}>หรือระบุกรัมเอง:</Text>
             <TextInput
               style={styles.weightInput}
               keyboardType="numeric"
               value={String(weightGrams)}
               onChangeText={(t) => setWeightGrams(parseFloat(t) || 0)}
             />
-            <Text style={styles.unitGrams}>กรัม</Text>
-          </View>
-          {/* Quick presets */}
-          <View style={styles.presetRow}>
-            {[100, 150, 200, 250].map((g) => (
-              <TouchableOpacity
-                key={g}
-                style={[styles.presetBtn, weightGrams === g && styles.presetBtnActive]}
-                onPress={() => setWeightGrams(g)}
-              >
-                <Text style={[styles.presetBtnText, weightGrams === g && styles.presetBtnTextActive]}>
-                  {g}g
-                </Text>
-              </TouchableOpacity>
-            ))}
+            <Text style={styles.unitGrams}>กรัม (g)</Text>
           </View>
         </View>
 
@@ -163,37 +178,36 @@ export default function LogScreen() {
             <Text style={styles.summaryLabel}>kcal</Text>
           </View>
           <View style={styles.summaryItem}>
-            <Text style={[styles.summaryVal, { color: '#1cb0f6' }]}>{calculatedProtein}g</Text>
+            <Text style={[styles.summaryVal, { color: colors.protein }]}>{calculatedProtein}g</Text>
             <Text style={styles.summaryLabel}>โปรตีน</Text>
           </View>
           <View style={styles.summaryItem}>
-            <Text style={[styles.summaryVal, { color: '#cca000' }]}>{calculatedCarbs}g</Text>
+            <Text style={[styles.summaryVal, { color: colors.carbs }]}>{calculatedCarbs}g</Text>
             <Text style={styles.summaryLabel}>คาร์บ</Text>
           </View>
           <View style={styles.summaryItem}>
-            <Text style={[styles.summaryVal, { color: '#ff9600' }]}>{calculatedFat}g</Text>
+            <Text style={[styles.summaryVal, { color: colors.fat }]}>{calculatedFat}g</Text>
             <Text style={styles.summaryLabel}>ไขมัน</Text>
           </View>
         </View>
 
-        {/* Big 3D Duolingo Button */}
         <TouchableOpacity
           style={[styles.bigLogBtn, button3D.primary, saving && { opacity: 0.6 }]}
           onPress={handleAddLog}
           disabled={saving}
         >
-          <Text style={styles.bigLogBtnText}>+ บันทึกมื้อนี้ (+10 XP & 5 🪙)</Text>
+          <Text style={styles.bigLogBtnText}>
+            {saving ? 'กำลังบันทึก...' : `+ บันทึก ${selectedFood.name} (${weightGrams}g)`}
+          </Text>
         </TouchableOpacity>
       </View>
 
       {/* Today's Logged Items List */}
-      <View style={styles.card3D}>
-        <View style={styles.listHeaderRow}>
-          <Text style={styles.sectionTitle}>📋 อาหารที่ทานแล้ววันนี้ ({todayEntries.length} เมนู)</Text>
-        </View>
+      <View style={styles.bentoCard}>
+        <Text style={styles.sectionTitle}>📋 รายการอาหารวันนี้ ({todayEntries.length} เมนู)</Text>
 
         {todayEntries.length === 0 ? (
-          <Text style={styles.emptyListText}>ยังไม่มีรายการอาหารวันนี้ — เริ่มบันทึกด้านบนได้เลย!</Text>
+          <Text style={styles.emptyListText}>ยังไม่มีรายการอาหารวันนี้ — เลือกเมนูด้านบนเพื่อเริ่มบันทึก</Text>
         ) : (
           todayEntries.map((item, idx) => (
             <View key={item.id || idx} style={styles.logItemRow}>
@@ -223,13 +237,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.xs,
   },
   preTitle: {
     fontSize: 10,
     fontWeight: '800',
-    letterSpacing: 0.8,
-    color: colors.textMuted,
+    letterSpacing: 0.7,
+    color: colors.primaryDark,
   },
   title: {
     fontSize: fontSize.xl,
@@ -238,26 +251,22 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   xpBadge: {
-    backgroundColor: '#ffffff',
-    borderColor: '#ce82ff',
-    borderWidth: 2,
-    borderBottomWidth: 3,
+    backgroundColor: colors.primarySoft,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: radius.md,
+    borderRadius: radius.full,
   },
   xpText: {
     fontSize: fontSize.xs,
     fontWeight: '800',
-    color: '#a559d9',
+    color: colors.primaryDark,
   },
 
-  card3D: {
-    backgroundColor: '#ffffff',
+  bentoCard: {
+    backgroundColor: '#FFFFFF',
     borderRadius: radius.lg,
-    borderWidth: 2,
-    borderColor: '#e5e5e5',
-    borderBottomWidth: 4,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: spacing.md,
   },
   sectionTitle: {
@@ -266,82 +275,94 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: spacing.sm,
   },
+  searchInput: {
+    backgroundColor: colors.bgElevated,
+    borderWidth: 1,
+    borderColor: colors.borderMid,
+    borderRadius: radius.md,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    fontSize: fontSize.sm,
+    color: colors.text,
+    marginBottom: spacing.sm,
+  },
 
   foodScroll: { marginBottom: spacing.md },
   foodChip: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.bgElevated,
     borderRadius: radius.md,
-    borderWidth: 2,
-    borderColor: '#e5e5e5',
-    borderBottomWidth: 3,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: 12,
-    marginRight: 10,
+    marginRight: 8,
     alignItems: 'center',
-    width: 110,
+    width: 112,
   },
   foodChipActive: {
-    borderColor: '#1cb0f6',
-    backgroundColor: '#f1faff',
+    borderColor: colors.primary,
+    borderWidth: 1.5,
+    backgroundColor: colors.primarySoft,
   },
-  foodEmoji: { fontSize: 28, marginBottom: 4 },
+  foodEmoji: { fontSize: 26, marginBottom: 4 },
   foodName: { fontSize: 12, fontWeight: '700', color: colors.text, textAlign: 'center' },
-  foodNameActive: { color: '#1cb0f6', fontWeight: '800' },
+  foodNameActive: { color: colors.primaryDark, fontWeight: '800' },
   foodKcalSub: { fontSize: 10, color: colors.textMuted, marginTop: 2, fontWeight: '600' },
-  foodKcalSubActive: { color: '#1cb0f6' },
 
   portionSection: {
-    paddingTop: spacing.xs,
+    paddingTop: spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: colors.border,
     marginBottom: spacing.md,
   },
-  portionLabel: { fontSize: fontSize.xs, fontWeight: '700', color: colors.textMuted, marginBottom: 6 },
+  presetGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  presetBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: colors.bgElevated,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.borderMid,
+  },
+  presetBtnActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primaryDark,
+  },
+  presetBtnText: { fontSize: 11, fontWeight: '700', color: colors.textSecondary },
+  presetBtnTextActive: { color: '#FFFFFF', fontWeight: '800' },
+
   weightInputRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginBottom: 8,
   },
+  portionLabel: { fontSize: fontSize.xs, fontWeight: '700', color: colors.textSecondary },
   weightInput: {
     flex: 1,
-    backgroundColor: '#ffffff',
-    borderRadius: radius.md,
-    borderWidth: 2,
-    borderColor: '#d6d6d6',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    backgroundColor: colors.bgElevated,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.borderMid,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
     fontSize: fontSize.base,
     fontWeight: '800',
     color: colors.text,
   },
-  unitGrams: { fontSize: fontSize.sm, fontWeight: '700', color: colors.textMuted },
-
-  presetRow: { flexDirection: 'row', gap: 8 },
-  presetBtn: {
-    flex: 1,
-    paddingVertical: 6,
-    backgroundColor: '#ffffff',
-    borderRadius: radius.sm,
-    borderWidth: 1.5,
-    borderColor: '#e5e5e5',
-    alignItems: 'center',
-  },
-  presetBtnActive: {
-    borderColor: '#a5ed6e',
-    backgroundColor: '#f6fff0',
-    borderWidth: 2,
-  },
-  presetBtnText: { fontSize: fontSize.xs, fontWeight: '700', color: colors.text },
-  presetBtnTextActive: { color: '#2c6800', fontWeight: '800' },
+  unitGrams: { fontSize: fontSize.xs, fontWeight: '700', color: colors.textMuted },
 
   summaryBox: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: '#fbfbfb',
+    backgroundColor: colors.bgElevated,
     borderRadius: radius.md,
-    borderWidth: 1.5,
-    borderColor: '#e5e5e5',
-    padding: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 12,
     marginBottom: spacing.md,
   },
   summaryItem: { alignItems: 'center' },
@@ -355,16 +376,9 @@ const styles = StyleSheet.create({
   bigLogBtnText: {
     fontSize: fontSize.sm,
     fontWeight: '800',
-    color: '#111111',
-    letterSpacing: 0.3,
+    color: '#FFFFFF',
   },
 
-  listHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.xs,
-  },
   emptyListText: {
     fontSize: fontSize.xs,
     color: colors.textMuted,
@@ -377,10 +391,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: colors.border,
     gap: 10,
   },
-  logItemEmoji: { fontSize: 24 },
+  logItemEmoji: { fontSize: 22 },
   logItemInfo: { flex: 1 },
   logItemName: { fontSize: fontSize.sm, fontWeight: '700', color: colors.text },
   logItemMacros: { fontSize: 11, color: colors.textMuted, fontWeight: '600', marginTop: 2 },
@@ -388,7 +402,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#fff0f0',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },

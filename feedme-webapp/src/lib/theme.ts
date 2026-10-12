@@ -1,140 +1,146 @@
 // ══════════════════════════════════════════════════════════════
-//  FeedMe — Duolingo Gamification Design System Tokens
-//  Aligned with Khalidabdi1/design-ai/duolingo/DESIGN.md:
-//  Primary Green (#58CC02), 3D Depth (#46A302), Canvas (#ddf4ff),
-//  Crisp White Cards (#FFFFFF), Ink Text (#4B4B4B), and 3D Buttons
+//  FeedMe AI — Modern Bento Athletic Design System Tokens
+//  Light Slate Canvas (#F1F5F9), Crisp Bento Cards (#FFFFFF),
+//  Midnight Navy Hero Card (#0F172A), Electric Mint (#10B981),
+//  and Sky Cyan AI Accent (#38BDF8).
 // ══════════════════════════════════════════════════════════════
 
 export const colors = {
-  // Core Duolingo Foundation (GitHub Spec)
-  primary:      '#58CC02', // Vivid Duolingo green (CTAs, completion, success)
-  primaryDark:  '#46A302', // 3D bottom border for primary button
-  primarySoft:  '#D7FFB8', // Highlight fill and success tint
-  onPrimary:    '#FFFFFF', // White text on vivid green
-  background:   '#ddf4ff', // Calming pale sky-blue canvas
-  accent:       '#1CB0F6', // Bright cyan-blue (interactive highlights & protein)
-  accentDark:   '#1899D6', // 3D bottom border for accent button
-  accentSoft:   'rgba(28, 176, 246, 0.12)',
-  accentMid:    'rgba(28, 176, 246, 0.25)',
+  // Core Bento Athletic Foundation
+  primary:       '#10B981', // Electric Mint primary action
+  primaryDark:   '#059669',
+  primarySoft:   'rgba(16, 185, 129, 0.12)',
+  onPrimary:     '#FFFFFF',
+  background:    '#F1F5F9', // Light Slate Canvas
+  heroBg:        '#0F172A', // Midnight Navy Hero Bento Card
+  heroElevated:  '#1E293B',
+  accent:        '#0284C7', // Sky Cyan Athletic Accent
+  accentDark:    '#0369A1',
+  accentSoft:    'rgba(56, 189, 248, 0.14)',
+  accentMid:     'rgba(56, 189, 248, 0.25)',
+  aiBlue:        '#0284C7',
+  aiBlueSoft:    'rgba(56, 189, 248, 0.14)',
 
   // Typography
-  text:         '#4B4B4B', // Duolingo primary ink
-  textPrimary:  '#4B4B4B',
-  textSecondary:'#777777', // Secondary labels
-  textSecond:   '#777777',
-  textMuted:    '#777777',
+  text:          '#0F172A',
+  textPrimary:   '#0F172A',
+  textSecondary: '#475569',
+  textSecond:    '#475569',
+  textMuted:     '#64748B',
 
   // Containers & Surfaces
-  card:         '#FFFFFF', // Crisp white content cards
-  surface:      '#FFFFFF',
-  bgBase:       '#ddf4ff', // Canvas background
-  bgSurface:    '#FFFFFF',
-  bgElevated:   '#F7F7F7', // Light gray support surface
-  bgCard:       '#FFFFFF',
+  card:          '#FFFFFF',
+  surface:       '#FFFFFF',
+  bgBase:        '#F1F5F9',
+  bgSurface:     '#FFFFFF',
+  bgElevated:    '#F8FAFC',
+  bgCard:        '#FFFFFF',
 
   // Borders & Dividers
-  border:       '#E5E5E5',
-  borderSoft:   '#E5E5E5',
-  borderMid:    '#D7D7D7',
-  borderSky:    '#BFE9FF',
+  border:        '#E2E8F0',
+  cardBorder:    '#E2E8F0',
+  borderSoft:    '#E2E8F0',
+  borderMid:     '#CBD5E1',
+  borderSky:     '#BAE6FD',
 
-  // Gamification Assets
-  streak:       '#FF9600', // Fire orange
-  streakDark:   '#CC7800',
-  coins:        '#FFD900', // Duolingo gold coins / gems
-  coinsDark:    '#CCA000',
-  gold:         '#FFD900',
-  hearts:       '#FF4B4B', // Duolingo heart red
-  heartsDark:   '#D92B2B',
-  purple:       '#CE82FF', // XP & League purple
-  purpleDark:   '#A559D9',
+  // Gamification & Status
+  streak:        '#F59E0B',
+  streakDark:    '#D97706',
+  coins:         '#F59E0B',
+  coinsDark:     '#B45309',
+  gold:          '#F59E0B',
+  hearts:        '#EF4444',
+  heartsDark:    '#DC2626',
+  purple:        '#6366F1',
+  purpleDark:    '#4F46E5',
 
-  // Status & Feedback
-  danger:       '#FF4B4B',
-  warning:      '#FF9600',
-  success:      '#58CC02',
+  danger:        '#EF4444',
+  warning:       '#F59E0B',
+  success:       '#10B981',
 
   // Macro Palette
-  protein:      '#1CB0F6', // Duolingo cyan
-  carbs:        '#FFD900', // Duolingo gold
-  fat:          '#FF9600', // Duolingo orange
+  protein:       '#0284C7',
+  carbs:         '#059669',
+  fat:           '#D97706',
 };
 
 export const spacing = {
   xs:  6,
-  sm:  10, // 10px base unit
-  md:  15,
-  lg:  20, // 2x base
-  xl:  30, // 3x base
-  xxl: 40,
+  sm:  10,
+  md:  16,
+  lg:  20,
+  xl:  28,
+  xxl: 36,
 };
 
 export const radius = {
   sm:   10,
   md:   14,
-  lg:   16,
-  xl:   24, // 24px per Duolingo card spec
+  lg:   18,
+  xl:   22,
   full: 9999,
 };
 
 export const fontSize = {
-  xs:   11,
-  sm:   13,
-  base: 15,
-  lg:   17,
-  xl:   20,
+  xs:    11,
+  sm:    13,
+  base:  15,
+  lg:    17,
+  xl:    20,
   '2xl': 24,
   '3xl': 32,
-  '4xl': 44,
+  '4xl': 42,
 };
 
-// ── Signature Duolingo 3D Pushable Button Styles ──────────────
 export const button3D = {
   primary: {
     backgroundColor: colors.primary,
-    borderColor: colors.primaryDark,
-    borderBottomWidth: 4,
     borderRadius: radius.md,
   },
   accent: {
-    backgroundColor: colors.accent,
-    borderColor: colors.accentDark,
-    borderBottomWidth: 4,
+    backgroundColor: colors.heroBg,
     borderRadius: radius.md,
   },
   streak: {
     backgroundColor: colors.streak,
-    borderColor: colors.streakDark,
-    borderBottomWidth: 4,
     borderRadius: radius.md,
   },
   gold: {
     backgroundColor: colors.coins,
-    borderColor: colors.coinsDark,
-    borderBottomWidth: 4,
     borderRadius: radius.md,
   },
   white: {
     backgroundColor: '#FFFFFF',
-    borderColor: '#E5E5E5',
-    borderWidth: 2,
-    borderBottomWidth: 4,
+    borderColor: '#CBD5E1',
+    borderWidth: 1,
     borderRadius: radius.md,
   },
   danger: {
     backgroundColor: colors.danger,
-    borderColor: colors.heartsDark,
-    borderBottomWidth: 4,
     borderRadius: radius.md,
   },
 };
 
-// ── Playful Card Elevation (Cartoon-Physical Depth) ───────────
+export const buttonBento = button3D;
+
 export const cardStyle = {
   backgroundColor: colors.card,
-  borderRadius: radius.xl,
-  borderWidth: 2,
-  borderColor: '#E5E5E5',
-  borderBottomWidth: 4,
+  borderRadius: radius.lg,
+  borderWidth: 1,
+  borderColor: colors.border,
   padding: spacing.lg,
+};
+
+export const cardBento = {
+  backgroundColor: colors.card,
+  borderRadius: radius.lg,
+  borderWidth: 1,
+  borderColor: colors.border,
+};
+
+export const cardHeroBento = {
+  backgroundColor: colors.heroBg,
+  borderRadius: radius.lg,
+  borderWidth: 1,
+  borderColor: colors.heroElevated,
 };

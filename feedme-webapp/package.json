@@ -31,7 +31,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "web": "expo start --web",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --experimental-strip-types src/lib/__tests__/overload.test.ts"
   },
   "private": true
 }

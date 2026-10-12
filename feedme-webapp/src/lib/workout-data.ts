@@ -27,6 +27,21 @@ export const WORKOUTS: WorkoutType[] = [
   { id: 'badminton',    name: 'Badminton',        emoji: '🏸', coinsPerMinute: 2.0,  caloriesPerMinute: 7,   category: 'sports' },
 ];
 
+export const WORKOUT_TYPES: WorkoutType[] = WORKOUTS;
+
+export function calculateWorkoutReward(workoutId: string, durationMinutes: number, weightKg = 70) {
+  const workout = WORKOUTS.find((w) => w.id === workoutId);
+  if (!workout) return null;
+  const weightMultiplier = Math.max(0.75, Math.min(1.5, weightKg / 70));
+  const caloriesBurned = Math.round(workout.caloriesPerMinute * durationMinutes * weightMultiplier);
+  const coinsEarned = Math.round(workout.coinsPerMinute * durationMinutes);
+  return {
+    workout,
+    caloriesBurned,
+    coinsEarned,
+  };
+}
+
 export const WORKOUT_CATEGORIES = [
   { id: 'cardio',       label: 'Cardio',      emoji: '❤️' },
   { id: 'strength',     label: 'Strength',    emoji: '💪' },
