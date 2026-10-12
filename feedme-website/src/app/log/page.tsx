@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { useAppState } from '@/hooks/useAppState';
@@ -111,7 +111,7 @@ export default function LogPage() {
             boxShadow: logMode === 'search' ? '0 2px 8px rgba(0,0,0,0.2)' : 'none',
           }}
         >
-          🔍 Search / Scale Log
+          🔍 Search / Portion Log
         </button>
       </div>
 
