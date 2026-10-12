@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { useAppState } from '@/hooks/useAppState';
@@ -100,7 +100,7 @@ export default function SupplementCard() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
             <select
               value={timeOfDay}
-              onChange={e => setTimeOfDay(e.target.value as any)}
+              onChange={e => setTimeOfDay(e.target.value as SupplementItem['timeOfDay'])}
               className="input-field"
               style={{ fontSize: '12px', padding: '8px 10px' }}
             >

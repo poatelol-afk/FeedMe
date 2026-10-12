@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as db from '@/lib/db';
 import { WeightLog, WeightStats } from '@/types';
-import BleScaleButton from '@/components/profile/BleScaleButton';
 
 export default function WeightCard() {
   const [history, setHistory] = useState<WeightLog[]>([]);
@@ -45,8 +44,8 @@ export default function WeightCard() {
 
   const changeColor = (val: number | null) => {
     if (val === null) return 'var(--text-muted)';
-    if (val < 0) return 'var(--accent)';   // น้ำหนักลง = ดี (สีเขียว)
-    if (val > 0) return 'var(--danger)';   // น้ำหนักขึ้น (สีแดง)
+    if (val < 0) return 'var(--accent-deep)';
+    if (val > 0) return 'var(--danger)';
     return 'var(--text-muted)';
   };
 
@@ -63,7 +62,6 @@ export default function WeightCard() {
     return 'Obese';
   };
 
-  // Mini sparkline — สร้าง SVG path จาก history
   const sparkline = (() => {
     if (history.length < 2) return null;
     const vals = history.map(h => h.weightKg);
@@ -80,26 +78,22 @@ export default function WeightCard() {
   })();
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-
-      {/* ── BLE Connection ── */}
-      <BleScaleButton onWeightReceived={async () => { await load(); }} />
-
-      {/* ── Stats card ── */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
+      {/* Stats card */}
       <div className="card">
         <div className="flex items-center justify-between" style={{ marginBottom: '16px' }}>
-          <p className="text-label">⚖️ Weight</p>
+          <p className="text-label">📉 Body Weight Tracker</p>
           {stats?.latest && (
             <div style={{
               background: 'var(--bg-elevated)', border: '1px solid var(--border-soft)',
               borderRadius: '8px', padding: '4px 10px',
             }}>
               <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>BMI </span>
-              <span style={{ fontSize: '12px', fontWeight: '500', color: 'var(--text-primary)' }}>
+              <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>
                 {stats.bmi ?? '—'}
               </span>
               {stats.bmi && (
-                <span style={{ fontSize: '10px', color: 'var(--text-muted)', marginLeft: '4px' }}>
+                <span style={{ fontSize: '10px', color: 'var(--accent-deep)', fontWeight: 700, marginLeft: '6px' }}>
                   {bmiCategory(stats.bmi)}
                 </span>
               )}
@@ -111,28 +105,28 @@ export default function WeightCard() {
           <div style={{ height: '60px', borderRadius: '8px', background: 'var(--bg-elevated)', animation: 'pulse 1.5s ease-in-out infinite' }} />
         ) : stats?.latest ? (
           <>
-            {/* Current weight */}
+            {/* Current weight in kg */}
             <div style={{ textAlign: 'center', marginBottom: '16px' }}>
               <p style={{
-                fontSize: '3rem', fontWeight: '300', letterSpacing: '-0.04em',
+                fontSize: '3rem', fontWeight: 800, letterSpacing: '-0.04em',
                 color: 'var(--text-primary)', lineHeight: 1,
               }}>
                 {stats.latest}
               </p>
-              <p className="text-label" style={{ marginTop: '4px' }}>g</p>
+              <p className="text-label" style={{ marginTop: '4px' }}>kg</p>
             </div>
 
             {/* Change stats */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr', marginBottom: '16px' }}>
               <div style={{ textAlign: 'center' }}>
-                <p style={{ fontSize: '16px', fontWeight: '300', color: changeColor(stats.change7d), letterSpacing: '-0.02em' }}>
+                <p style={{ fontSize: '16px', fontWeight: 700, color: changeColor(stats.change7d), letterSpacing: '-0.02em' }}>
                   {changeLabel(stats.change7d)}
                 </p>
                 <p className="text-label" style={{ marginTop: '4px' }}>vs 7 days</p>
               </div>
               <div style={{ background: 'var(--border-soft)' }} />
               <div style={{ textAlign: 'center' }}>
-                <p style={{ fontSize: '16px', fontWeight: '300', color: changeColor(stats.change30d), letterSpacing: '-0.02em' }}>
+                <p style={{ fontSize: '16px', fontWeight: 700, color: changeColor(stats.change30d), letterSpacing: '-0.02em' }}>
                   {changeLabel(stats.change30d)}
                 </p>
                 <p className="text-label" style={{ marginTop: '4px' }}>vs 30 days</p>
@@ -141,31 +135,31 @@ export default function WeightCard() {
 
             {/* Sparkline */}
             {sparkline && (
-              <svg width="100%" height="32" viewBox={`0 0 120 32`} preserveAspectRatio="none" style={{ marginBottom: '4px' }}>
-                <path d={sparkline} fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <svg width="100%" height="32" viewBox="0 0 120 32" preserveAspectRatio="none" style={{ marginBottom: '4px' }}>
+                <path d={sparkline} fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             )}
-            <p style={{ fontSize: '10px', color: 'var(--text-muted)', textAlign: 'center' }}>Last 30 days</p>
+            <p style={{ fontSize: '10px', color: 'var(--text-muted)', textAlign: 'center' }}>Last 30 days trend</p>
           </>
         ) : (
           <div style={{ padding: '16px 0', textAlign: 'center' }}>
-            <p className="text-body" style={{ marginBottom: '4px' }}>No weight recorded yet</p>
+            <p className="text-body" style={{ marginBottom: '4px' }}>No body weight recorded yet</p>
             <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-              Log manually below or connect your scale
+              Log your current body weight (kg) below to track BMI and TDEE
             </p>
           </div>
         )}
       </div>
 
-      {/* ── Manual input ── */}
+      {/* Manual input */}
       <div className="card">
-        <p className="text-label" style={{ marginBottom: '12px' }}>Log weight</p>
+        <p className="text-label" style={{ marginBottom: '12px' }}>Log Body Weight (kg)</p>
         <div style={{ display: 'flex', gap: '8px' }}>
           <input
             type="number"
             value={manualKg}
             onChange={e => setManualKg(e.target.value)}
-            placeholder="e.g. 68.5"
+            placeholder="e.g. 68.5 kg"
             min="20" max="500" step="0.1"
             className="input-field"
             style={{ flex: 1 }}
@@ -174,20 +168,17 @@ export default function WeightCard() {
             onClick={handleManualLog}
             disabled={saving || !manualKg || parseFloat(manualKg) <= 0}
             className="btn-primary"
-            style={{ width: 'auto', padding: '0 20px', opacity: saving ? 0.6 : 1, flexShrink: 0 }}
+            style={{ width: 'auto', padding: '0 22px', opacity: saving ? 0.6 : 1, flexShrink: 0 }}
           >
-            {saving ? '…' : 'Save'}
+            {saving ? '…' : 'Save kg'}
           </button>
         </div>
-        <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>
-          📡 Scale auto-sends via <code style={{ fontSize: '10px', background: 'var(--bg-elevated)', padding: '1px 4px', borderRadius: '4px' }}>POST /api/scale/reading</code>
-        </p>
       </div>
 
-      {/* ── History list ── */}
+      {/* History list */}
       {history.length > 0 && (
         <div className="card">
-          <p className="text-label" style={{ marginBottom: '12px' }}>History</p>
+          <p className="text-label" style={{ marginBottom: '12px' }}>Weight History</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
             {[...history].reverse().slice(0, 10).map((log, i) => {
               const date = new Date(log.measuredAt).toLocaleDateString('en-US', {
@@ -196,14 +187,12 @@ export default function WeightCard() {
               return (
                 <div key={log.id}>
                   <div className="flex items-center" style={{ gap: '10px', padding: '9px 0' }}>
-                    <span style={{ fontSize: '16px', flexShrink: 0 }}>
-                      {log.source === 'scale' ? '⚖️' : '✏️'}
-                    </span>
+                    <span style={{ fontSize: '16px', flexShrink: 0 }}>⚖️</span>
                     <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: '14px', fontWeight: '400', color: 'var(--text-primary)' }}>
+                      <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
                         {log.weightKg} kg
                         {log.bmi && (
-                          <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginLeft: '6px' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', marginLeft: '6px' }}>
                             BMI {log.bmi}
                           </span>
                         )}
@@ -219,10 +208,7 @@ export default function WeightCard() {
                         color: 'var(--text-muted)', fontSize: '15px',
                         cursor: 'pointer', display: 'flex',
                         alignItems: 'center', justifyContent: 'center',
-                        transition: 'color 0.15s',
                       }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--danger)'; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'; }}
                     >×</button>
                   </div>
                   {i < Math.min(history.length, 10) - 1 && <div className="divider" />}

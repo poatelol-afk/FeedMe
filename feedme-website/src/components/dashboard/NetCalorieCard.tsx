@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -18,12 +18,12 @@ export default function NetCalorieCard({ consumed, burned, goal }: NetCalorieCar
   const isOver = net > goal;
   const pct = goal > 0 ? Math.min(Math.round((net / goal) * 100), 100) : 0;
 
-  const R = 72;
+  const R = 68;
   const C = 2 * Math.PI * R;
   const strokeOffset = C * (1 - pct / 100);
 
   useEffect(() => {
-    const duration = 800;
+    const duration = 700;
     const start = performance.now();
     let frame = 0;
     const tick = (now: number) => {
@@ -38,175 +38,227 @@ export default function NetCalorieCard({ consumed, burned, goal }: NetCalorieCar
   }, [consumed, burned]);
 
   return (
-    <div className="card" style={{ padding: '24px', position: 'relative', overflow: 'hidden' }}>
+    <div className="bento-hero" style={{ position: 'relative', overflow: 'hidden' }}>
       {/* Header */}
-      <div className="flex items-center justify-between" style={{ marginBottom: '20px' }}>
+      <div className="flex items-center justify-between" style={{ marginBottom: '18px' }}>
         <div>
-          <span className="text-label" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)' }} />
-            Net Calorie Balance
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '11px',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.07em',
+              color: '#38BDF8',
+            }}
+          >
+            <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#10B981' }} />
+            Net Energy Balance
           </span>
-          <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
-            Daily Energy = Food In − Workout Out
+          <p style={{ fontSize: '11px', color: '#94A3B8', marginTop: '2px' }}>
+            Food Consumed − Workout Burned vs TDEE
           </p>
         </div>
         <span
-          className="badge-accent"
           style={{
             fontSize: '11px',
-            background: isOver ? 'rgba(201,123,123,0.15)' : 'var(--accent-soft)',
-            color: isOver ? 'var(--danger)' : 'var(--accent)',
-            border: `1px solid ${isOver ? 'rgba(201,123,123,0.3)' : 'rgba(143,184,154,0.25)'}`,
+            fontWeight: 700,
+            padding: '4px 10px',
+            borderRadius: '999px',
+            background: isOver ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.18)',
+            color: isOver ? '#FCA5A5' : '#34D399',
+            border: `1px solid ${isOver ? 'rgba(239, 68, 68, 0.35)' : 'rgba(16, 185, 129, 0.32)'}`,
           }}
         >
-          {isOver ? 'Deficit Exceeded' : remaining === 0 ? 'Goal Met' : `${remaining.toLocaleString()} kcal left`}
+          {isOver ? `${Math.abs(remaining).toLocaleString()} kcal over` : `${remaining.toLocaleString()} kcal left`}
         </span>
       </div>
 
-      {/* Main Visual: Ring + Formula */}
-      <div className="flex items-center" style={{ gap: '28px', flexWrap: 'wrap' }}>
-        {/* Ring */}
-        <div style={{ position: 'relative', width: '160px', height: '160px', flexShrink: 0, margin: '0 auto' }}>
-          <svg width="160" height="160" viewBox="0 0 160 160" style={{ transform: 'rotate(-90deg)' }}>
-            {/* Background track */}
+      {/* Main Visual: Ring + 3 Metrics */}
+      <div className="flex items-center" style={{ gap: '22px', flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', width: '150px', height: '150px', flexShrink: 0, margin: '0 auto' }}>
+          <svg width="150" height="150" viewBox="0 0 150 150" style={{ transform: 'rotate(-90deg)' }}>
             <circle
-              cx="80" cy="80" r={R}
+              cx="75"
+              cy="75"
+              r={R}
               fill="none"
-              stroke="var(--border-soft)"
-              strokeWidth="9"
+              stroke="rgba(148, 163, 184, 0.2)"
+              strokeWidth="10"
             />
-            {/* Progress arc */}
             <circle
-              cx="80" cy="80" r={R}
+              cx="75"
+              cy="75"
+              r={R}
               fill="none"
-              stroke={isOver ? 'var(--danger)' : 'var(--accent)'}
-              strokeWidth="9"
+              stroke={isOver ? '#EF4444' : '#10B981'}
+              strokeWidth="10"
               strokeLinecap="round"
               strokeDasharray={C}
               strokeDashoffset={strokeOffset}
-              style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(0.4,0,0.2,1)' }}
+              style={{ transition: 'stroke-dashoffset 0.7s cubic-bezier(0.4,0,0.2,1)' }}
             />
           </svg>
-          <div style={{
-            position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center', pointerEvents: 'none',
-          }}>
-            <span style={{ fontSize: '1.75rem', fontWeight: '300', letterSpacing: '-0.04em', color: 'var(--text-primary)', lineHeight: 1 }}>
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              pointerEvents: 'none',
+            }}
+          >
+            <span style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.04em', color: '#FFFFFF', lineHeight: 1 }}>
               {net.toLocaleString()}
             </span>
-            <span style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <span style={{ fontSize: '10px', color: '#94A3B8', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 }}>
               Net kcal
             </span>
           </div>
         </div>
 
         {/* 3-Column Metrics Breakdown */}
-        <div style={{ flex: 1, minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {/* Eaten */}
+        <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center" style={{ gap: '10px' }}>
-              <div style={{
-                width: '32px', height: '32px', borderRadius: '10px',
-                background: 'rgba(212,169,106,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '15px',
-              }}>
+              <div
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '10px',
+                  background: 'rgba(56, 189, 248, 0.14)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '15px',
+                }}
+              >
                 🍱
               </div>
               <div>
-                <p style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-primary)' }}>Food Consumed</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Calorie intake</p>
+                <p style={{ fontSize: '13px', fontWeight: 700, color: '#F8FAFC' }}>Food Consumed</p>
+                <p style={{ fontSize: '11px', color: '#94A3B8' }}>Meals &amp; snacks</p>
               </div>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--macro-fat)' }}>
+              <p style={{ fontSize: '14px', fontWeight: 800, color: '#38BDF8' }}>
                 +{animatedConsumed.toLocaleString()}
               </p>
-              <p style={{ fontSize: '10px', color: 'var(--text-muted)' }}>kcal</p>
+              <p style={{ fontSize: '10px', color: '#94A3B8' }}>kcal</p>
             </div>
           </div>
 
-          <div className="divider" />
+          <div style={{ height: '1px', background: 'rgba(148, 163, 184, 0.16)' }} />
 
-          {/* Burned */}
           <div className="flex items-center justify-between">
             <div className="flex items-center" style={{ gap: '10px' }}>
-              <div style={{
-                width: '32px', height: '32px', borderRadius: '10px',
-                background: 'rgba(201,169,110,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '15px',
-              }}>
+              <div
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '10px',
+                  background: 'rgba(16, 185, 129, 0.16)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '15px',
+                }}
+              >
                 🔥
               </div>
               <div>
-                <p style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-primary)' }}>Workout Burned</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>MET exercise burn</p>
+                <p style={{ fontSize: '13px', fontWeight: 700, color: '#F8FAFC' }}>Workout Burned</p>
+                <p style={{ fontSize: '11px', color: '#94A3B8' }}>Strength &amp; cardio</p>
               </div>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--gold)' }}>
+              <p style={{ fontSize: '14px', fontWeight: 800, color: '#34D399' }}>
                 -{animatedBurned.toLocaleString()}
               </p>
-              <p style={{ fontSize: '10px', color: 'var(--text-muted)' }}>kcal</p>
+              <p style={{ fontSize: '10px', color: '#94A3B8' }}>kcal</p>
             </div>
           </div>
 
-          <div className="divider" />
+          <div style={{ height: '1px', background: 'rgba(148, 163, 184, 0.16)' }} />
 
-          {/* Budget */}
           <div className="flex items-center justify-between">
             <div className="flex items-center" style={{ gap: '10px' }}>
-              <div style={{
-                width: '32px', height: '32px', borderRadius: '10px',
-                background: 'var(--accent-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '15px',
-              }}>
+              <div
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '10px',
+                  background: 'rgba(245, 158, 11, 0.16)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '15px',
+                }}
+              >
                 🎯
               </div>
               <div>
-                <p style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-primary)' }}>TDEE Target</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Mifflin-St Jeor</p>
+                <p style={{ fontSize: '13px', fontWeight: 700, color: '#F8FAFC' }}>TDEE Target</p>
+                <p style={{ fontSize: '11px', color: '#94A3B8' }}>Mifflin-St Jeor</p>
               </div>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--accent)' }}>
+              <p style={{ fontSize: '14px', fontWeight: 800, color: '#FBBF24' }}>
                 {goal.toLocaleString()}
               </p>
-              <p style={{ fontSize: '10px', color: 'var(--text-muted)' }}>kcal goal</p>
+              <p style={{ fontSize: '10px', color: '#94A3B8' }}>kcal goal</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Quick Action Footer */}
-      <div style={{
-        marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-soft)',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-            Budget used: <strong style={{ color: 'var(--text-primary)' }}>{pct}%</strong>
-          </span>
-        </div>
+      {/* Footer Quick Actions */}
+      <div
+        style={{
+          marginTop: '18px',
+          paddingTop: '14px',
+          borderTop: '1px solid rgba(148, 163, 184, 0.16)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <span style={{ fontSize: '12px', color: '#94A3B8' }}>
+          Daily budget used: <strong style={{ color: '#FFFFFF' }}>{pct}%</strong>
+        </span>
         <div style={{ display: 'flex', gap: '8px' }}>
           <Link
             href="/log"
             style={{
-              padding: '6px 12px', borderRadius: '8px', fontSize: '11px',
-              fontWeight: '500', background: 'var(--bg-elevated)', border: '1px solid var(--border-soft)',
-              color: 'var(--accent)', textDecoration: 'none',
+              padding: '6px 12px',
+              borderRadius: '10px',
+              fontSize: '11px',
+              fontWeight: 700,
+              background: '#10B981',
+              color: '#FFFFFF',
+              textDecoration: 'none',
             }}
           >
-            + Food
+            + Log Food
           </Link>
           <Link
             href="/workout"
             style={{
-              padding: '6px 12px', borderRadius: '8px', fontSize: '11px',
-              fontWeight: '500', background: 'var(--bg-elevated)', border: '1px solid var(--border-soft)',
-              color: 'var(--gold)', textDecoration: 'none',
+              padding: '6px 12px',
+              borderRadius: '10px',
+              fontSize: '11px',
+              fontWeight: 700,
+              background: 'rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(148, 163, 184, 0.25)',
+              color: '#F8FAFC',
+              textDecoration: 'none',
             }}
           >
-            + Move
+            + Workout
           </Link>
         </div>
       </div>

@@ -4,9 +4,9 @@ import AppShell from "@/components/layout/AppShell";
 import { AppProvider } from "@/hooks/useAppState";
 
 export const metadata: Metadata = {
-  title: "FeedMe — กินดี มีวินัย ฟิตหุ่นสนุกสไตล์ Duolingo",
+  title: "FeedMe AI — Smart Performance & Nutrition",
   description:
-    "เพื่อนคู่หูสุขภาพ AI และตาชั่งอัจฉริยะ IoT ชั่งอาหารอัตโนมัติ วางแผนยกเวท Progressive Overload และสะสมเหรียญรางวัล",
+    "AI Food Vision, Smart Portion Tracking, Progressive Overload Coach, and Daily Energy Balance in a Modern Bento Athletic interface.",
 };
 
 export const viewport: Viewport = {
@@ -14,7 +14,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#58CC02",
+  themeColor: "#0F172A",
 };
 
 export default function RootLayout({
@@ -22,15 +22,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="th" className="h-full">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className="min-h-full font-sans antialiased text-[#4B4B4B] bg-[#F7F7F7]">
+      <body className="min-h-full font-sans antialiased text-[#0F172A] bg-[#F1F5F9]">
         <AppProvider>
           <AppShell>{children}</AppShell>
         </AppProvider>

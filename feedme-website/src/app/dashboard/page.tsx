@@ -1,7 +1,7 @@
 'use client';
 
 import { useAppState } from '@/hooks/useAppState';
-import { getGreeting, formatDate, getTodayTotals } from '@/lib/utils';
+import { calculateFitnessLevel, getGreeting, formatDate, getTodayTotals } from '@/lib/utils';
 import NetCalorieCard from '@/components/dashboard/NetCalorieCard';
 import AICoachInsight from '@/components/dashboard/AICoachInsight';
 import WaterTrackerCard from '@/components/dashboard/WaterTrackerCard';
@@ -41,43 +41,61 @@ export default function DashboardPage() {
   };
 
   const netCalories = Math.max(0, totals.kcal - totalBurnedToday);
+  const completedQuests = quests.filter(q => q.isCompleted).length;
+  const fitnessLevel = calculateFitnessLevel(streak?.current ?? 0, completedQuests, workouts.length);
 
   return (
-    <div style={{ padding: '32px 24px 80px' }} className="animate-fade-in">
-      {/* Header */}
-      <div style={{ marginBottom: '20px' }} className="flex items-start justify-between">
+    <div style={{ padding: '28px 20px 88px' }} className="animate-fade-in">
+      {/* Modern Bento Header */}
+      <div style={{ marginBottom: '18px' }} className="flex items-start justify-between">
         <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 900, color: 'var(--accent-deep)', letterSpacing: '0.04em' }}>
+              ⚡ FEEDME AI
+            </span>
+            <span style={{ color: 'var(--border-mid)' }}>·</span>
+            <span className="text-label">{formatDate()}</span>
+          </div>
           <p style={{
-            fontSize: '22px', fontWeight: '300',
+            fontSize: '22px', fontWeight: 800,
             letterSpacing: '-0.02em', color: 'var(--text-primary)',
           }}>
             {getGreeting()} 👋
           </p>
-          <p className="text-label mt-1">{formatDate()}</p>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <Link
-            href="/profile"
-            style={{
-              background: 'var(--bg-elevated)',
-              border: '1px solid var(--border-soft)',
-              borderRadius: '10px', padding: '6px 12px',
-              display: 'flex', alignItems: 'center', gap: '6px',
-              textDecoration: 'none',
-            }}
-          >
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)' }} />
-            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '500' }}>
-              IoT Scale
-            </span>
-          </Link>
-        </div>
+        <Link
+          href="/profile"
+          style={{
+            background: 'var(--bg-hero)',
+            color: '#F8FAFC',
+            border: '1px solid rgba(148, 163, 184, 0.25)',
+            borderRadius: '999px',
+            padding: '7px 14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            textDecoration: 'none',
+            boxShadow: '0 4px 12px rgba(15, 23, 42, 0.1)',
+          }}
+        >
+          <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--accent)' }} />
+          <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.02em' }}>
+            Lv.{fitnessLevel.level} {fitnessLevel.title}
+          </span>
+        </Link>
       </div>
 
-      {/* Cards stacked */}
+      {/* Bento Stack */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        {/* 1. AI Health Coach Insight Card */}
+        {/* 1. Hero Bento Card: Net Calorie Summary */}
+        <NetCalorieCard
+          consumed={totals.kcal}
+          burned={totalBurnedToday}
+          goal={effectiveGoal.tdee}
+        />
+
+        {/* 2. AI Health Coach Insight Card */}
         <AICoachInsight
           netCalories={netCalories}
           consumedCalories={totals.kcal}
@@ -89,24 +107,17 @@ export default function DashboardPage() {
           streakDays={streak?.current ?? 0}
         />
 
-        {/* 2. Net Calorie Summary (True Net Energy Balance) */}
-        <NetCalorieCard
-          consumed={totals.kcal}
-          burned={totalBurnedToday}
-          goal={effectiveGoal.tdee}
-        />
-
         {/* 3. Gamification Stats (Coins & Streak) */}
         <StatsRow coins={coins} streak={streak} />
 
-        {/* 4. Water Tracker Card */}
+        {/* 4. Macronutrients Breakdown */}
+        <MacroProgress consumed={totals} goal={effectiveGoal} />
+
+        {/* 5. Water Tracker Card */}
         <WaterTrackerCard />
 
-        {/* 5. Supplement & Health Stack */}
+        {/* 6. Supplement & Health Stack */}
         <SupplementCard />
-
-        {/* 6. Macronutrients Breakdown */}
-        <MacroProgress consumed={totals} goal={effectiveGoal} />
 
         {/* 7. Trend & Energy Charts */}
         <NutritionCharts trend={calorieTrend} totals={totals} />
@@ -121,9 +132,8 @@ export default function DashboardPage() {
             <Link
               href="/log"
               style={{
-                fontSize: '11px', fontWeight: '500',
-                color: 'var(--accent)', textDecoration: 'none',
-                letterSpacing: '0.04em',
+                fontSize: '12px', fontWeight: 700,
+                color: 'var(--accent-deep)', textDecoration: 'none',
               }}
             >
               + Log Meal
@@ -132,9 +142,9 @@ export default function DashboardPage() {
 
           {diary.length === 0 ? (
             <div style={{ padding: '20px 0', textAlign: 'center' }}>
-              <p className="text-body" style={{ marginBottom: '4px' }}>Nothing logged yet</p>
-              <Link href="/log" style={{ fontSize: '12px', color: 'var(--accent)', textDecoration: 'none' }}>
-                Log your first meal with AI or Search →
+              <p className="text-body" style={{ marginBottom: '4px' }}>Nothing logged yet today</p>
+              <Link href="/log" style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent-deep)', textDecoration: 'none' }}>
+                Log your first meal with AI Vision or Search →
               </Link>
             </div>
           ) : (
@@ -148,7 +158,7 @@ export default function DashboardPage() {
                     <div className="flex items-center" style={{ gap: '12px', padding: '10px 0' }}>
                       <span style={{ fontSize: '18px', lineHeight: 1, flexShrink: 0 }}>{entry.emoji}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {entry.foodName}
                         </p>
                         <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '1px' }}>
@@ -156,7 +166,7 @@ export default function DashboardPage() {
                         </p>
                       </div>
                       <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                        <p style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)' }}>
+                        <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>
                           {entry.kcal}
                         </p>
                         <p style={{ fontSize: '10px', color: 'var(--text-muted)' }}>kcal</p>
@@ -173,8 +183,6 @@ export default function DashboardPage() {
                           alignItems: 'center', justifyContent: 'center',
                           transition: 'color 0.15s, background 0.15s',
                         }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--danger)'; (e.currentTarget as HTMLButtonElement).style.background = 'rgba(220,60,60,0.08)'; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'; (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
                       >×</button>
                     </div>
                     {i < diary.length - 1 && <div className="divider" />}
@@ -193,11 +201,11 @@ export default function DashboardPage() {
               <Link
                 href="/workout"
                 style={{
-                  fontSize: '11px', fontWeight: '500',
-                  color: 'var(--gold)', textDecoration: 'none',
+                  fontSize: '12px', fontWeight: 700,
+                  color: 'var(--accent-deep)', textDecoration: 'none',
                 }}
               >
-                + Move
+                + Train
               </Link>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -206,12 +214,12 @@ export default function DashboardPage() {
                   <div className="flex items-center" style={{ gap: '12px', padding: '10px 0' }}>
                     <span style={{ fontSize: '18px', flexShrink: 0 }}>{w.emoji}</span>
                     <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-primary)' }}>{w.workoutName}</p>
+                      <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{w.workoutName}</p>
                       <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '1px' }}>
                         {w.duration} min · -{w.caloriesBurned} kcal
                       </p>
                     </div>
-                    <span style={{ fontSize: '12px', color: 'var(--gold)', fontWeight: '500' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--gold)', fontWeight: 700 }}>
                       +{w.coinsEarned} coins
                     </span>
                   </div>
