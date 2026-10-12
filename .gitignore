@@ -55,3 +55,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+
+# Superpowers scratch & Hardware secrets
+.superpowers/
+Hardware/secrets.h
+.env.*
+!.env.example
+
