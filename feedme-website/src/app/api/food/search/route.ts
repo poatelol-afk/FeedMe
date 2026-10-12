@@ -1,4 +1,4 @@
-﻿import 'server-only';
+import 'server-only';
 
 import { NextResponse } from 'next/server';
 import type { FoodItem, FoodPortion } from '@/types';
@@ -6,8 +6,9 @@ import type { FoodItem, FoodPortion } from '@/types';
 const USDA_SEARCH_URL = 'https://api.nal.usda.gov/fdc/v1/foods/search';
 const ENERGY_IDS = [1008, 2048, 2047] as const;
 
-// DEV_BYPASS_AUTH: skip Supabase auth check when env flag is set
-const BYPASS_AUTH = process.env.DEV_BYPASS_AUTH === 'true';
+// DEV_BYPASS_AUTH: skip Supabase auth check when env flag is set in development
+const BYPASS_AUTH =
+  process.env.NODE_ENV === 'development' && process.env.DEV_BYPASS_AUTH === 'true';
 
 interface UsdaNutrient {
   nutrientId?: unknown;

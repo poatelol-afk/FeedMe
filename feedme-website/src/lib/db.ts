@@ -1,6 +1,6 @@
-﻿// =================================================================
+// =================================================================
 //  FeedMe — Supabase & Local Database Layer
-//  Resilient data access supporting Supabase + Dev Bypass Mode
+//  Full 9-table Supabase sync with LocalStorage offline fallback
 // =================================================================
 
 import { createClient } from '@/lib/supabase/client';
@@ -9,7 +9,7 @@ import {
   Quest, StreakData, SupplementItem, UserProfile, WaterEntry, WeightLog, WeightStats, WorkoutEntry,
 } from '@/types';
 import {
-  calculateGoal, genId, localDateKey, localDayBounds, todayKey, yesterdayKey,
+  calculateBmi, calculateGoal, computeWeightDeltas, genId, localDateKey, localDayBounds, todayKey, yesterdayKey,
 } from './utils';
 
 function sb() { return createClient(); }
@@ -62,6 +62,7 @@ export async function saveProfile(profile: UserProfile): Promise<NutritionGoal> 
         weight: profile.weight,
         height: profile.height,
         activity: profile.activity,
+        updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' });
 
       await supabase.from('nutrition_goals').upsert({
@@ -76,6 +77,7 @@ export async function saveProfile(profile: UserProfile): Promise<NutritionGoal> 
         fat_pct: goal.fat.pct,
         fat_g: goal.fat.g,
         fat_kcal: goal.fat.kcal,
+        updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' });
     }
   } catch (e) {
@@ -87,17 +89,25 @@ export async function saveProfile(profile: UserProfile): Promise<NutritionGoal> 
 
 export async function getProfile(): Promise<UserProfile | null> {
   try {
-    const { data, error } = await sb().from('profiles').select('*').maybeSingle();
-    if (data && !error) {
-      const p: UserProfile = {
-        age: data.age,
-        gender: data.gender as 'male' | 'female',
-        weight: data.weight,
-        height: data.height,
-        activity: data.activity,
-      };
-      setLocal('profile', p);
-      return p;
+    const supabase = sb();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (data && !error) {
+        const p: UserProfile = {
+          age: Number(data.age),
+          gender: data.gender as 'male' | 'female',
+          weight: Number(data.weight),
+          height: Number(data.height),
+          activity: Number(data.activity),
+        };
+        setLocal('profile', p);
+        return p;
+      }
     }
   } catch {
     // fallback
@@ -107,16 +117,24 @@ export async function getProfile(): Promise<UserProfile | null> {
 
 export async function getGoal(): Promise<NutritionGoal | null> {
   try {
-    const { data, error } = await sb().from('nutrition_goals').select('*').maybeSingle();
-    if (data && !error) {
-      const g: NutritionGoal = {
-        tdee: data.tdee,
-        protein: { pct: data.protein_pct, g: data.protein_g, kcal: data.protein_kcal },
-        carbs:   { pct: data.carbs_pct,   g: data.carbs_g,   kcal: data.carbs_kcal },
-        fat:     { pct: data.fat_pct,     g: data.fat_g,     kcal: data.fat_kcal },
-      };
-      setLocal('goal', g);
-      return g;
+    const supabase = sb();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data, error } = await supabase
+        .from('nutrition_goals')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (data && !error) {
+        const g: NutritionGoal = {
+          tdee: Number(data.tdee),
+          protein: { pct: Number(data.protein_pct), g: Number(data.protein_g), kcal: Number(data.protein_kcal) },
+          carbs:   { pct: Number(data.carbs_pct),   g: Number(data.carbs_g),   kcal: Number(data.carbs_kcal) },
+          fat:     { pct: Number(data.fat_pct),     g: Number(data.fat_g),     kcal: Number(data.fat_kcal) },
+        };
+        setLocal('goal', g);
+        return g;
+      }
     }
   } catch {
     // fallback
@@ -133,25 +151,36 @@ export async function getGoal(): Promise<NutritionGoal | null> {
 export async function getTodayDiary(): Promise<DiaryEntry[]> {
   const { start, end } = localDayBounds();
   try {
-    const { data, error } = await sb()
-      .from('diary_entries')
-      .select('*')
-      .gte('logged_at', start)
-      .lt('logged_at', end)
-      .order('logged_at', { ascending: true });
+    const supabase = sb();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data, error } = await supabase
+        .from('diary_entries')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('logged_at', start)
+        .lt('logged_at', end)
+        .order('logged_at', { ascending: true });
 
-    if (!error && data && data.length > 0) {
-      return data.map(r => ({
-        id: r.id,
-        foodName: r.food_name,
-        emoji: r.emoji,
-        weight: r.weight,
-        kcal: r.kcal,
-        protein: r.protein,
-        carbs: r.carbs,
-        fat: r.fat,
-        timestamp: r.logged_at,
-      }));
+      if (!error && data !== null) {
+        const mapped: DiaryEntry[] = data.map(r => ({
+          id: r.id,
+          foodName: r.food_name,
+          emoji: r.emoji,
+          weight: Number(r.weight),
+          kcal: Number(r.kcal),
+          protein: Number(r.protein),
+          carbs: Number(r.carbs),
+          fat: Number(r.fat),
+          timestamp: r.logged_at,
+        }));
+        const today = todayKey();
+        const otherDays = getLocal<DiaryEntry[]>('diary_entries', []).filter(
+          e => localDateKey(new Date(e.timestamp)) !== today
+        );
+        setLocal('diary_entries', [...mapped, ...otherDays]);
+        return mapped;
+      }
     }
   } catch {
     // fallback
@@ -166,7 +195,6 @@ export async function addFoodLog(entry: Omit<DiaryEntry, 'id' | 'timestamp'>): P
   const now = new Date().toISOString();
   const newEntry: DiaryEntry = { ...entry, id: genId(), timestamp: now };
 
-  // Always update local storage
   const allLocal = getLocal<DiaryEntry[]>('diary_entries', []);
   allLocal.unshift(newEntry);
   setLocal('diary_entries', allLocal);
@@ -200,7 +228,11 @@ export async function deleteFoodLog(id: string): Promise<void> {
   setLocal('diary_entries', allLocal.filter(e => e.id !== id));
 
   try {
-    await sb().from('diary_entries').delete().eq('id', id);
+    const supabase = sb();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from('diary_entries').delete().eq('id', id).eq('user_id', user.id);
+    }
   } catch {
     // silent fallback
   }
@@ -211,24 +243,35 @@ export async function deleteFoodLog(id: string): Promise<void> {
 export async function getTodayWorkouts(): Promise<WorkoutEntry[]> {
   const { start, end } = localDayBounds();
   try {
-    const { data, error } = await sb()
-      .from('workout_entries')
-      .select('*')
-      .gte('logged_at', start)
-      .lt('logged_at', end)
-      .order('logged_at', { ascending: true });
+    const supabase = sb();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data, error } = await supabase
+        .from('workout_entries')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('logged_at', start)
+        .lt('logged_at', end)
+        .order('logged_at', { ascending: true });
 
-    if (!error && data && data.length > 0) {
-      return data.map(r => ({
-        id: r.id,
-        workoutId: r.workout_id,
-        workoutName: r.workout_name,
-        emoji: r.emoji,
-        duration: r.duration,
-        coinsEarned: r.coins_earned,
-        caloriesBurned: r.calories_burned,
-        timestamp: r.logged_at,
-      }));
+      if (!error && data !== null) {
+        const mapped: WorkoutEntry[] = data.map(r => ({
+          id: r.id,
+          workoutId: r.workout_id,
+          workoutName: r.workout_name,
+          emoji: r.emoji,
+          duration: Number(r.duration),
+          coinsEarned: Number(r.coins_earned),
+          caloriesBurned: Number(r.calories_burned),
+          timestamp: r.logged_at,
+        }));
+        const today = todayKey();
+        const otherDays = getLocal<WorkoutEntry[]>('workout_entries', []).filter(
+          w => localDateKey(new Date(w.timestamp)) !== today
+        );
+        setLocal('workout_entries', [...mapped, ...otherDays]);
+        return mapped;
+      }
     }
   } catch {
     // fallback
@@ -274,7 +317,7 @@ export async function addWorkout(entry: Omit<WorkoutEntry, 'id' | 'timestamp'>):
   return newEntry;
 }
 
-// ── Water Tracking (P1 Plan) ─────────────────────────────────────
+// ── Water Tracking ───────────────────────────────────────────────
 
 export async function getWaterEntries(): Promise<WaterEntry[]> {
   const all = getLocal<WaterEntry[]>('water_entries', []);
@@ -303,21 +346,20 @@ export async function deleteWater(id: string): Promise<void> {
   setLocal('water_entries', all.filter(w => w.id !== id));
 }
 
-// ── Supplement Tracking (P1 Plan) ────────────────────────────────
+// ── Supplement Tracking ──────────────────────────────────────────
 
 const DEFAULT_SUPPLEMENTS: SupplementItem[] = [
-  { id: 'supp-whey',    name: 'Whey Protein Isolate', dose: '1 Scoop (30g)', timeOfDay: 'morning',   emoji: '🥛', taken: false },
-  { id: 'supp-creatine',name: 'Creatine Monohydrate', dose: '5g',           timeOfDay: 'morning',   emoji: '⚡', taken: false },
-  { id: 'supp-vitc',    name: 'Vitamin C 1000mg',     dose: '1 Tablet',     timeOfDay: 'afternoon', emoji: '🍊', taken: false },
-  { id: 'supp-omega3',  name: 'Omega-3 Fish Oil',     dose: '2 Softgels',   timeOfDay: 'evening',   emoji: '🐟', taken: false },
-  { id: 'supp-mag',     name: 'Magnesium Glycinate',  dose: '200mg',        timeOfDay: 'bedtime',   emoji: '🌙', taken: false },
+  { id: 'supp-whey',     name: 'Whey Protein Isolate', dose: '1 Scoop (30g)', timeOfDay: 'morning',   emoji: '🥛', taken: false },
+  { id: 'supp-creatine', name: 'Creatine Monohydrate', dose: '5g',            timeOfDay: 'morning',   emoji: '⚡', taken: false },
+  { id: 'supp-vitc',     name: 'Vitamin C 1000mg',     dose: '1 Tablet',      timeOfDay: 'afternoon', emoji: '🍊', taken: false },
+  { id: 'supp-omega3',   name: 'Omega-3 Fish Oil',     dose: '2 Softgels',    timeOfDay: 'evening',   emoji: '🐟', taken: false },
+  { id: 'supp-mag',      name: 'Magnesium Glycinate',  dose: '200mg',         timeOfDay: 'bedtime',   emoji: '🌙', taken: false },
 ];
 
 export async function getSupplements(): Promise<SupplementItem[]> {
   const saved = getLocal<SupplementItem[]>('supplements', DEFAULT_SUPPLEMENTS);
   const today = todayKey();
 
-  // Reset taken status if logged on a different day
   return saved.map(s => {
     const isToday = s.lastTakenAt && localDateKey(new Date(s.lastTakenAt)) === today;
     return { ...s, taken: Boolean(isToday) };
@@ -326,7 +368,6 @@ export async function getSupplements(): Promise<SupplementItem[]> {
 
 export async function toggleSupplement(id: string): Promise<SupplementItem[]> {
   const supps = await getSupplements();
-  const today = todayKey();
   const updated = supps.map(s => {
     if (s.id === id) {
       const willBeTaken = !s.taken;
@@ -369,6 +410,31 @@ export async function getCalorieTrend(): Promise<CalorieTrendPoint[]> {
   }
 
   const byDate = new Map(points.map(point => [point.date, point]));
+
+  try {
+    const supabase = sb();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const startIso = new Date(firstDay.getFullYear(), firstDay.getMonth(), firstDay.getDate()).toISOString();
+      const { data, error } = await supabase
+        .from('diary_entries')
+        .select('kcal, logged_at')
+        .eq('user_id', user.id)
+        .gte('logged_at', startIso);
+
+      if (!error && data !== null) {
+        for (const row of data) {
+          const dKey = localDateKey(new Date(row.logged_at));
+          const point = byDate.get(dKey);
+          if (point) point.kcal = +(point.kcal + (Number(row.kcal) || 0)).toFixed(1);
+        }
+        return points;
+      }
+    }
+  } catch {
+    // fallback to local
+  }
+
   const allDiary = getLocal<DiaryEntry[]>('diary_entries', []);
   for (const row of allDiary) {
     const dKey = localDateKey(new Date(row.timestamp));
@@ -379,9 +445,27 @@ export async function getCalorieTrend(): Promise<CalorieTrendPoint[]> {
   return points;
 }
 
-// ── Gamification: Coins & Streak ─────────────────────────────────
+// ── Gamification: Coins & Streak (Synced with user_coins & streak_data) ──
 
 export async function getCoins(): Promise<number> {
+  try {
+    const supabase = sb();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data, error } = await supabase
+        .from('user_coins')
+        .select('balance')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (!error && data) {
+        const balance = Number(data.balance);
+        setLocal('coins', balance);
+        return balance;
+      }
+    }
+  } catch {
+    // fallback
+  }
   return getLocal<number>('coins', 150);
 }
 
@@ -389,17 +473,68 @@ export async function earnCoins(amount: number): Promise<number> {
   const current = await getCoins();
   const next = current + amount;
   setLocal('coins', next);
+
+  try {
+    const supabase = sb();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from('user_coins').upsert({
+        user_id: user.id,
+        balance: next,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' });
+    }
+  } catch {
+    // local fallback
+  }
   return next;
 }
 
 export async function spendCoins(amount: number): Promise<boolean> {
   const current = await getCoins();
   if (current < amount) return false;
-  setLocal('coins', current - amount);
+  const next = current - amount;
+  setLocal('coins', next);
+
+  try {
+    const supabase = sb();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from('user_coins').upsert({
+        user_id: user.id,
+        balance: next,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' });
+    }
+  } catch {
+    // local fallback
+  }
   return true;
 }
 
 export async function getStreak(): Promise<StreakData> {
+  try {
+    const supabase = sb();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data, error } = await supabase
+        .from('streak_data')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (!error && data) {
+        const s: StreakData = {
+          current: Number(data.current),
+          longest: Number(data.longest),
+          lastActiveDate: data.last_active_date ?? null,
+        };
+        setLocal('streak', s);
+        return s;
+      }
+    }
+  } catch {
+    // fallback
+  }
   return getLocal<StreakData>('streak', { current: 3, longest: 7, lastActiveDate: todayKey() });
 }
 
@@ -419,10 +554,26 @@ export async function updateStreak(): Promise<StreakData> {
   const longest = Math.max(s.longest, current);
   const updated: StreakData = { current, longest, lastActiveDate: today };
   setLocal('streak', updated);
+
+  try {
+    const supabase = sb();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from('streak_data').upsert({
+        user_id: user.id,
+        current: updated.current,
+        longest: updated.longest,
+        last_active_date: updated.lastActiveDate,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' });
+    }
+  } catch {
+    // local fallback
+  }
   return updated;
 }
 
-// ── Quests ───────────────────────────────────────────────────────
+// ── Quests (Synced with public.quests) ───────────────────────────
 
 export function generateDefaultQuests(): Quest[] {
   const endOfWeek = new Date();
@@ -438,6 +589,35 @@ export function generateDefaultQuests(): Quest[] {
 }
 
 export async function getQuests(): Promise<Quest[]> {
+  try {
+    const supabase = sb();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data, error } = await supabase
+        .from('quests')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (!error && data && data.length > 0) {
+        const mapped: Quest[] = data.map(r => ({
+          id: r.quest_key,
+          title: r.title,
+          description: r.description,
+          emoji: r.emoji,
+          target: Number(r.target),
+          progress: Number(r.progress),
+          reward: Number(r.reward),
+          type: r.type as Quest['type'],
+          isCompleted: Boolean(r.is_completed),
+          expiresAt: r.expires_at,
+        }));
+        setLocal('quests', mapped);
+        return mapped;
+      }
+    }
+  } catch {
+    // fallback
+  }
   return getLocal<Quest[]>('quests', generateDefaultQuests());
 }
 
@@ -456,12 +636,61 @@ export async function updateQuestProgress(type: Quest['type'], increment: number
     }
   }
 
-  if (changed) setLocal('quests', quests);
+  if (changed) {
+    setLocal('quests', quests);
+    try {
+      const supabase = sb();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const rows = quests.map(q => ({
+          user_id: user.id,
+          quest_key: q.id,
+          title: q.title,
+          description: q.description,
+          emoji: q.emoji,
+          target: q.target,
+          progress: q.progress,
+          reward: q.reward,
+          type: q.type,
+          is_completed: q.isCompleted,
+          expires_at: q.expiresAt,
+        }));
+        await supabase.from('quests').upsert(rows, { onConflict: 'user_id,quest_key' });
+      }
+    } catch {
+      // local fallback
+    }
+  }
 }
 
-// ── Purchases ────────────────────────────────────────────────────
+// ── Purchases (Synced with public.purchases) ─────────────────────
 
 export async function getPurchases(): Promise<PurchaseRecord[]> {
+  try {
+    const supabase = sb();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data, error } = await supabase
+        .from('purchases')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('purchased_at', { ascending: false });
+
+      if (!error && data !== null) {
+        const mapped: PurchaseRecord[] = data.map(r => ({
+          id: r.id,
+          itemId: r.item_id,
+          itemName: r.item_name,
+          coinSpent: Number(r.coin_spent),
+          timestamp: r.purchased_at,
+        }));
+        setLocal('purchases', mapped);
+        return mapped;
+      }
+    }
+  } catch {
+    // fallback
+  }
   return getLocal<PurchaseRecord[]>('purchases', []);
 }
 
@@ -470,9 +699,28 @@ export async function addPurchase(entry: Omit<PurchaseRecord, 'id' | 'timestamp'
   if (!spent) return false;
 
   const now = new Date().toISOString();
-  const all = await getPurchases();
-  all.unshift({ ...entry, id: genId(), timestamp: now });
+  const newPurchase: PurchaseRecord = { ...entry, id: genId(), timestamp: now };
+  const all = getLocal<PurchaseRecord[]>('purchases', []);
+  all.unshift(newPurchase);
   setLocal('purchases', all);
+
+  try {
+    const supabase = sb();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from('purchases').insert({
+        id: newPurchase.id,
+        user_id: user.id,
+        item_id: entry.itemId,
+        item_name: entry.itemName,
+        coin_spent: entry.coinSpent,
+        purchased_at: now,
+      });
+    }
+  } catch {
+    // local fallback
+  }
+
   return true;
 }
 
@@ -507,14 +755,14 @@ export async function getFullState(): Promise<AppState> {
     quests,
     purchases,
     calorieTrend,
-    waterGoal: 2500, // standard 2,500 ml
+    waterGoal: 2500,
     waterToday,
     waterEntries,
     supplements,
   };
 }
 
-// ── Scale / Weight Log ───────────────────────────────────────────
+// ── Body Weight Log (Synced with public.weight_logs) ─────────────
 
 export async function logWeightReading(
   weightKg: number,
@@ -524,8 +772,7 @@ export async function logWeightReading(
   let bmi: number | undefined;
   const profile = await getProfile();
   if (profile && profile.height > 0) {
-    const heightM = profile.height / 100;
-    bmi = Math.round((weightKg / (heightM * heightM)) * 10) / 10;
+    bmi = calculateBmi(weightKg, profile.height) ?? undefined;
   }
 
   const now = new Date().toISOString();
@@ -542,6 +789,24 @@ export async function logWeightReading(
   logs.push(entry);
   setLocal('weight_logs', logs);
 
+  try {
+    const supabase = sb();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from('weight_logs').insert({
+        id: entry.id,
+        user_id: user.id,
+        weight_kg: entry.weightKg,
+        bmi: entry.bmi ?? null,
+        device_id: entry.deviceId ?? null,
+        source: entry.source,
+        measured_at: entry.measuredAt,
+      });
+    }
+  } catch {
+    // local fallback
+  }
+
   if (profile) {
     await saveProfile({ ...profile, weight: weightKg });
   }
@@ -550,31 +815,68 @@ export async function logWeightReading(
 }
 
 export async function getWeightHistory(days = 30): Promise<WeightLog[]> {
+  const cutoff = new Date(Date.now() - days * 86400000).toISOString();
+
+  try {
+    const supabase = sb();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data, error } = await supabase
+        .from('weight_logs')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('measured_at', cutoff)
+        .order('measured_at', { ascending: true });
+
+      if (!error && data !== null && data.length > 0) {
+        const mapped: WeightLog[] = data.map(r => ({
+          id: r.id,
+          weightKg: Number(r.weight_kg),
+          bmi: r.bmi !== null && r.bmi !== undefined ? Number(r.bmi) : undefined,
+          deviceId: r.device_id ?? undefined,
+          source: (r.source === 'scale' ? 'scale' : 'manual') as 'manual' | 'scale',
+          measuredAt: r.measured_at,
+        }));
+        setLocal('weight_logs', mapped);
+        return mapped;
+      }
+    }
+  } catch {
+    // fallback
+  }
+
   const logs = getLocal<WeightLog[]>('weight_logs', [
-    { id: 'w1', weightKg: 71.5, measuredAt: new Date(Date.now() - 14 * 86400000).toISOString(), source: 'scale' },
-    { id: 'w2', weightKg: 70.8, measuredAt: new Date(Date.now() - 7 * 86400000).toISOString(), source: 'scale' },
-    { id: 'w3', weightKg: 70.0, measuredAt: new Date().toISOString(), source: 'scale' },
+    { id: 'w1', weightKg: 71.5, bmi: 23.3, measuredAt: new Date(Date.now() - 14 * 86400000).toISOString(), source: 'manual' },
+    { id: 'w2', weightKg: 70.8, bmi: 23.1, measuredAt: new Date(Date.now() - 7 * 86400000).toISOString(), source: 'manual' },
+    { id: 'w3', weightKg: 70.0, bmi: 22.9, measuredAt: new Date().toISOString(), source: 'manual' },
   ]);
-  return logs;
+  return logs.filter(w => w.measuredAt >= cutoff);
 }
 
 export async function getWeightStats(): Promise<WeightStats> {
   const history = await getWeightHistory(30);
-  if (history.length === 0) {
-    return { latest: null, change7d: null, change30d: null, bmi: null };
-  }
-  const latest = history[history.length - 1];
-  const first = history[0];
+  const stats = computeWeightDeltas(history);
 
-  return {
-    latest: latest.weightKg,
-    bmi: latest.bmi ?? 22.9,
-    change7d: -0.8,
-    change30d: -1.5,
-  };
+  if (stats.latest !== null && stats.bmi === null) {
+    const profile = await getProfile();
+    if (profile && profile.height > 0) {
+      stats.bmi = calculateBmi(stats.latest, profile.height);
+    }
+  }
+  return stats;
 }
 
 export async function deleteWeightLog(id: string): Promise<void> {
   const logs = getLocal<WeightLog[]>('weight_logs', []);
   setLocal('weight_logs', logs.filter(w => w.id !== id));
+
+  try {
+    const supabase = sb();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from('weight_logs').delete().eq('id', id).eq('user_id', user.id);
+    }
+  } catch {
+    // local fallback
+  }
 }
