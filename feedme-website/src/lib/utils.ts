@@ -2,7 +2,7 @@
 //  FeedMe — Utility Functions
 // ═══════════════════════════════════════════════════════
 
-import { DiaryEntry, MacroTotals, NutritionGoal, UserProfile, WorkoutEntry } from '@/types';
+import type { DiaryEntry, MacroTotals, NutritionGoal, UserProfile, WeightLog, WeightStats, WorkoutEntry } from '../types/index.ts';
 
 /** Generate a short unique ID */
 export function genId(): string {
@@ -58,14 +58,119 @@ export function calculateGoal(profile: UserProfile): NutritionGoal {
   // Macro split: 30% protein, 40% carbs, 30% fat
   const proteinKcal = tdee * 0.30;
   const carbsKcal   = tdee * 0.40;
-  const fatKcal      = tdee * 0.30;
+  const fatKcal     = tdee * 0.30;
 
   return {
     tdee,
     protein: { pct: 30, g: Math.round(proteinKcal / 4), kcal: Math.round(proteinKcal) },
     carbs:   { pct: 40, g: Math.round(carbsKcal / 4),   kcal: Math.round(carbsKcal) },
-    fat:     { pct: 30, g: Math.round(fatKcal / 9),      kcal: Math.round(fatKcal) },
+    fat:     { pct: 30, g: Math.round(fatKcal / 9),     kcal: Math.round(fatKcal) },
   };
+}
+
+/** Calculate Body Mass Index (BMI) rounded to 1 decimal place */
+export function calculateBmi(weightKg: number, heightCm: number): number | null {
+  if (!weightKg || !heightCm || weightKg <= 0 || heightCm <= 0) return null;
+  const heightM = heightCm / 100;
+  return +(weightKg / (heightM * heightM)).toFixed(1);
+}
+
+/**
+ * Compute latest weight, BMI, and 7-day / 30-day weight deltas from actual history.
+ * Returns null for change7d / change30d if insufficient historical entries exist.
+ */
+export function computeWeightDeltas(history: WeightLog[], now = new Date()): WeightStats {
+  if (!history || history.length === 0) {
+    return { latest: null, change7d: null, change30d: null, bmi: null };
+  }
+
+  const sorted = [...history].sort(
+    (a, b) => new Date(a.measuredAt).getTime() - new Date(b.measuredAt).getTime()
+  );
+  const latestEntry = sorted[sorted.length - 1];
+  const latest = latestEntry.weightKg;
+  const bmi = latestEntry.bmi ?? null;
+
+  if (sorted.length < 2) {
+    return { latest, change7d: null, change30d: null, bmi };
+  }
+
+  const nowMs = now.getTime();
+  const sixDaysAgoMs = nowMs - 6 * 24 * 60 * 60 * 1000;
+  const twentyFiveDaysAgoMs = nowMs - 25 * 24 * 60 * 60 * 1000;
+
+  // Find closest entry on or before ~7 days ago (at least 6 days old), or fallback if none
+  let ref7d: WeightLog | null = null;
+  for (let i = sorted.length - 2; i >= 0; i--) {
+    const t = new Date(sorted[i].measuredAt).getTime();
+    if (t <= sixDaysAgoMs) {
+      ref7d = sorted[i];
+      break;
+    }
+  }
+  if (!ref7d) {
+    ref7d = sorted[0];
+  }
+
+  // Find closest entry on or before ~30 days ago, or oldest entry
+  let ref30d: WeightLog | null = null;
+  for (let i = sorted.length - 2; i >= 0; i--) {
+    const t = new Date(sorted[i].measuredAt).getTime();
+    if (t <= twentyFiveDaysAgoMs) {
+      ref30d = sorted[i];
+      break;
+    }
+  }
+  if (!ref30d) {
+    ref30d = sorted[0];
+  }
+
+  const change7d = ref7d ? +(latest - ref7d.weightKg).toFixed(1) : null;
+  const change30d = ref30d ? +(latest - ref30d.weightKg).toFixed(1) : null;
+
+  return { latest, change7d, change30d, bmi };
+}
+
+/** Calculate RPG Fitness Level & Title from streak, completed quests, and workouts */
+export function calculateFitnessLevel(
+  streakDays: number,
+  completedQuests: number,
+  workoutCount: number
+): { level: number; title: string; xp: number; nextLevelXp: number } {
+  const xp = Math.max(0, streakDays * 40 + completedQuests * 35 + workoutCount * 50);
+  const tiers = [
+    { level: 1, title: 'Rookie', minXp: 0, nextXp: 150 },
+    { level: 2, title: 'Starter', minXp: 150, nextXp: 350 },
+    { level: 3, title: 'Active', minXp: 350, nextXp: 600 },
+    { level: 4, title: 'Fit', minXp: 600, nextXp: 1000 },
+    { level: 5, title: 'Pro Athlete', minXp: 1000, nextXp: 1500 },
+  ];
+
+  for (let i = tiers.length - 1; i >= 0; i--) {
+    if (xp >= tiers[i].minXp) {
+      return {
+        level: tiers[i].level,
+        title: tiers[i].title,
+        xp,
+        nextLevelXp: tiers[i].nextXp,
+      };
+    }
+  }
+
+  return { level: 1, title: 'Rookie', xp, nextLevelXp: 150 };
+}
+
+/** Sanitize post-login redirect path to prevent open-redirect vulnerabilities */
+export function sanitizeRedirectPath(
+  next: string | null | undefined,
+  fallback = '/dashboard'
+): string {
+  if (!next || typeof next !== 'string') return fallback;
+  const trimmed = next.trim();
+  if (!trimmed.startsWith('/')) return fallback;
+  if (trimmed.startsWith('//') || trimmed.startsWith('/\\')) return fallback;
+  if (trimmed.includes('://')) return fallback;
+  return trimmed;
 }
 
 /** Sum up macro totals from diary entries */
