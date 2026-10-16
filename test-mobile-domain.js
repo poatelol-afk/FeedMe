@@ -132,5 +132,48 @@ test('FeedMe Mobile Task 5 Workout and League Screen Verification', async (t) =>
   });
 });
 
+test('FeedMe Mobile Task 6 Profile Screen and App Shell Verification', async (t) => {
+  await t.test('profile_screen.dart exists with Gem Shop, streak protection, and BLE hardware card', () => {
+    const profilePath = path.join(mobileDir, 'lib/features/profile/profile_screen.dart');
+    assert.strictEqual(fs.existsSync(profilePath), true, 'profile_screen.dart must exist');
+    const content = fs.readFileSync(profilePath, 'utf-8');
+
+    assert.ok(content.includes('class ProfileScreen'), 'Must define ProfileScreen');
+    assert.ok(content.includes('ร้านค้ารางวัล (Gem Shop)'), 'Must include Duolingo Gem Shop');
+    assert.ok(content.includes('Streak Protection'), 'Must include streak freeze protection');
+    assert.ok(content.includes('FeedMe Smart Scale'), 'Must include BLE scale hardware info');
+    assert.ok(content.includes('controller.toggleScaleConnection'), 'Must wire toggleScaleConnection');
+    assert.ok(content.includes('controller.purchaseShopItem'), 'Must wire purchaseShopItem');
+  });
+
+  await t.test('main.dart exists with 5-tab IndexedStack and gamified status top bar', () => {
+    const mainPath = path.join(mobileDir, 'lib/main.dart');
+    assert.strictEqual(fs.existsSync(mainPath), true, 'main.dart must exist');
+    const content = fs.readFileSync(mainPath, 'utf-8');
+
+    assert.ok(content.includes('class FeedMeApp'), 'Must define FeedMeApp');
+    assert.ok(content.includes('class FeedMeMainShell'), 'Must define FeedMeMainShell');
+    assert.ok(content.includes('IndexedStack'), 'Must use IndexedStack for preserving tab state');
+    assert.ok(content.includes('หน้าแรก'), 'Tab 1: หน้าแรก');
+    assert.ok(content.includes('ครัว AI'), 'Tab 2: ครัว AI');
+    assert.ok(content.includes('ออกกำลัง'), 'Tab 3: ออกกำลัง');
+    assert.ok(content.includes('ลีกเพื่อน'), 'Tab 4: ลีกเพื่อน');
+    assert.ok(content.includes('โปรไฟล์'), 'Tab 5: โปรไฟล์');
+  });
+
+  await t.test('widget_test.dart exists and covers 5 bottom navigation tabs', () => {
+    const testPath = path.join(mobileDir, 'test/widget_test.dart');
+    assert.strictEqual(fs.existsSync(testPath), true, 'widget_test.dart must exist');
+    const content = fs.readFileSync(testPath, 'utf-8');
+
+    assert.ok(content.includes('FeedMeApp'), 'Must test FeedMeApp');
+    assert.ok(content.includes('หน้าแรก'), 'Must assert หน้าแรก');
+    assert.ok(content.includes('ครัว AI'), 'Must assert ครัว AI');
+    assert.ok(content.includes('ออกกำลัง'), 'Must assert ออกกำลัง');
+    assert.ok(content.includes('ลีกเพื่อน'), 'Must assert ลีกเพื่อน');
+    assert.ok(content.includes('โปรไฟล์'), 'Must assert โปรไฟล์');
+  });
+});
+
 
 

@@ -18,8 +18,11 @@ const EXPECTED_CHAR_UUID = 'beb5483e-36e1-4688-b7f5-ea07361b26a8';
 const EXPECTED_DEVICE_NAME = 'FeedMe Scale';
 
 const rootDir = __dirname;
-const inoPath = path.join(rootDir, 'Hardware', 'Hardware_Scale.ino');
-const readmePath = path.join(rootDir, 'Hardware', 'README.md');
+const hardwareDir = fs.existsSync(path.join(rootDir, 'feedme-hardware'))
+  ? path.join(rootDir, 'feedme-hardware')
+  : path.join(rootDir, 'Hardware');
+const inoPath = path.join(hardwareDir, 'Hardware_Scale.ino');
+const readmePath = path.join(hardwareDir, 'README.md');
 const archPath = path.join(rootDir, 'ARCHITECTURE.md');
 
 let failures = [];

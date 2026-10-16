@@ -471,4 +471,9 @@ class FeedMeController extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  void toggleScaleConnection() {
+    isScaleConnected = !isScaleConnected;
+    notifyListeners();
+  }
 }
