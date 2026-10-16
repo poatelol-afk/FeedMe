@@ -1,19 +1,18 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import AppShell from "@/components/layout/AppShell";
-import { AppProvider } from "@/hooks/useAppState";
 
 export const metadata: Metadata = {
-  title: "FeedMe AI — Smart Performance & Nutrition",
+  title: "FeedMe 2.0 — เปลี่ยนการคุมอาหารและออกกำลังกายให้เป็นเกมที่สนุกที่สุด",
   description:
-    "AI Food Vision, Smart Portion Tracking, Progressive Overload Coach, and Daily Energy Balance in a Modern Bento Athletic interface.",
+    "แอปพลิเคชันคุมอาหารและฟิตเนสสไตล์เกม RPG: Smart Kitchen & BLE Scale, Strava-grade Run & Lift, และ Duolingo-style Leagues",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   themeColor: "#0F172A",
 };
 
@@ -21,11 +20,9 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="th" className="h-full">
-      <body className="min-h-full font-sans antialiased text-[#0F172A] bg-[#F1F5F9]">
-        <AppProvider>
-          <AppShell>{children}</AppShell>
-        </AppProvider>
+    <html lang="th" className="h-full scroll-smooth">
+      <body className="min-h-full font-sans antialiased text-white bg-[#0F172A] selection:bg-[#58CC02]/30 selection:text-white">
+        {children}
       </body>
     </html>
   );

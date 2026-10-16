@@ -51,26 +51,20 @@ export async function updateSession(request: NextRequest) {
     );
 
     // Refresh session -- do NOT remove this
-    const { data: { user } } = await supabase.auth.getUser();
+    await supabase.auth.getUser();
 
-    if (!user && isProtected && !isAuthRoute) {
+    if (isProtected || isAuthRoute) {
       const url = request.nextUrl.clone();
-      url.pathname = '/auth/login';
-      return NextResponse.redirect(url);
-    }
-
-    if (user && isAuthRoute) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/dashboard';
+      url.pathname = '/';
       return NextResponse.redirect(url);
     }
 
     return supabaseResponse;
   } catch (err) {
-    console.warn('[Middleware] Supabase auth check error:', err);
-    if (isProtected && !isAuthRoute) {
+    console.warn('[Middleware] Supabase check error:', err);
+    if (isProtected || isAuthRoute) {
       const url = request.nextUrl.clone();
-      url.pathname = '/auth/login';
+      url.pathname = '/';
       return NextResponse.redirect(url);
     }
     return NextResponse.next({ request });

@@ -1,519 +1,230 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { POPULAR_AI_FOOD_PRESETS } from '@/lib/ai-food-presets';
+import React from 'react';
+import HeroSection from '@/components/HeroSection';
+import PillarsBento from '@/components/PillarsBento';
+import InteractiveDemo from '@/components/InteractiveDemo';
 
-const SAMPLE_WORKOUTS = [
-  { id: 'bench', name: 'Barbell Bench Press (4×8 @ 75kg)', kcal: 240, coins: 120, xp: 65, overload: '+2.5 kg Next Session → 77.5 kg' },
-  { id: 'run', name: 'Zone 2 Tempo Run (35 min)', kcal: 320, coins: 140, xp: 80, overload: 'Pace target met · HR 146 bpm' },
-  { id: 'squat', name: 'Back Squat Hypertrophy (4×10 @ 95kg)', kcal: 290, coins: 150, xp: 85, overload: '+2.5 kg Next Session → 97.5 kg' },
-];
-
-export default function LandingShowcasePage() {
-  const [selectedDishIdx, setSelectedDishIdx] = useState(0);
-  const [portionMultiplier, setPortionMultiplier] = useState(1.0);
-  const [loggedBurnKcal, setLoggedBurnKcal] = useState(320);
-  const [coins, setCoins] = useState(1250);
-  const [streak] = useState(7);
-  const [xp, setXp] = useState(680);
-  const [waterMl, setWaterMl] = useState(1750);
-
-  const dish = POPULAR_AI_FOOD_PRESETS[selectedDishIdx] ?? POPULAR_AI_FOOD_PRESETS[0];
-  const dishKcal = Math.round(dish.kcal * portionMultiplier);
-  const dishProtein = +(dish.protein * portionMultiplier).toFixed(1);
-  const dishCarbs = +(dish.carbs * portionMultiplier).toFixed(1);
-  const dishFat = +(dish.fat * portionMultiplier).toFixed(1);
-  const dishGrams = Math.round(dish.weight * portionMultiplier);
-
-  const baseEaten = 980;
-  const totalEaten = baseEaten + dishKcal;
-  const tdeeGoal = 2400;
-  const netKcal = Math.max(0, totalEaten - loggedBurnKcal);
-  const remainingKcal = Math.max(0, tdeeGoal - netKcal);
-  const level = xp >= 1000 ? 5 : xp >= 600 ? 4 : 3;
-  const levelTitle = level === 5 ? 'Pro Athlete' : level === 4 ? 'Fit' : 'Active';
-
-  const handleLogWorkoutDemo = (w: typeof SAMPLE_WORKOUTS[number]) => {
-    setLoggedBurnKcal(prev => prev + w.kcal);
-    setCoins(prev => prev + w.coins);
-    setXp(prev => prev + w.xp);
-  };
-
+export default function LandingPage() {
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#F1F5F9', color: '#0F172A' }}>
-      {/* Sticky Modern Bento Header */}
-      <header
-        style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 40,
-          backgroundColor: 'rgba(248, 250, 252, 0.9)',
-          backdropFilter: 'blur(16px)',
-          borderBottom: '1px solid #E2E8F0',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: '1160px',
-            margin: '0 auto',
-            padding: '14px 24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '16px',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div
-              style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '11px',
-                background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#10B981',
-                fontWeight: 900,
-                fontSize: '18px',
-                boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)',
-              }}
-            >
+    <div className="min-h-screen bg-[#0F172A] text-white flex flex-col font-sans selection:bg-[#58CC02]/30 selection:text-white">
+      {/* ─── Sticky Promotional Navbar ─── */}
+      <header className="sticky top-0 z-50 bg-[#0F172A]/85 backdrop-blur-md border-b border-white/10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          {/* Logo & Tag */}
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#58CC02] to-[#1CB0F6] flex items-center justify-center font-black text-white text-lg shadow-md shadow-[#58CC02]/20">
               ⚡
             </div>
-            <div>
-              <span style={{ fontWeight: 900, fontSize: '16px', letterSpacing: '-0.02em', color: '#0F172A' }}>
-                FEEDME AI
+            <div className="flex items-center gap-2">
+              <span className="font-black text-lg sm:text-xl tracking-tight text-white">
+                FEEDME <span className="text-[#58CC02]">2.0</span>
               </span>
-              <span
-                style={{
-                  marginLeft: '8px',
-                  fontSize: '10px',
-                  fontWeight: 800,
-                  padding: '2px 8px',
-                  borderRadius: '999px',
-                  backgroundColor: 'rgba(16, 185, 129, 0.14)',
-                  color: '#059669',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                }}
-              >
-                Bento Athletic 2.0
+              <span className="hidden sm:inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#58CC02]/20 text-[#58CC02] border border-[#58CC02]/30">
+                MOBILE GAMIFIED
               </span>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '6px 12px',
-                borderRadius: '999px',
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #E2E8F0',
-                fontSize: '12px',
-                fontWeight: 700,
-              }}
-            >
-              <span style={{ color: '#F59E0B' }}>🔥 {streak}d</span>
-              <span style={{ color: '#CBD5E1' }}>|</span>
-              <span style={{ color: '#D97706' }}>🪙 {coins.toLocaleString()}</span>
-              <span style={{ color: '#CBD5E1' }}>|</span>
-              <span style={{ color: '#059669' }}>Lv.{level} {levelTitle}</span>
-            </div>
+          {/* Nav Links */}
+          <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-300">
+            <a href="#features" className="hover:text-white transition-colors">
+              3 เสาหลัก
+            </a>
+            <a href="#demo" className="hover:text-white transition-colors">
+              ทดลองคำนวณ Net Calories & XP
+            </a>
+            <a href="#compare" className="hover:text-white transition-colors">
+              เปรียบเทียบ
+            </a>
+            <a href="#download" className="hover:text-white transition-colors">
+              ดาวน์โหลด APK
+            </a>
+          </nav>
 
-            <Link
-              href="/dashboard"
-              className="btn-primary"
-              style={{ width: 'auto', minHeight: '40px', padding: '0 18px', fontSize: '13px', textDecoration: 'none' }}
+          {/* Quick CTA */}
+          <div className="flex items-center gap-3">
+            <a
+              href="#download"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#58CC02] hover:bg-[#4EBA02] text-white text-xs font-black tracking-wide border-b-2 border-[#3D8F00] active:border-b-0 active:translate-y-0.5 shadow-md shadow-[#58CC02]/25 transition-all cursor-pointer"
             >
-              Open App →
-            </Link>
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-1.0002 0-.5515.4482-1.0001.9993-1.0001.5516 0 .9997.4486.9997 1.0001 0 .5516-.4481 1.0002-.9997 1.0002m-11.046 0c-.5511 0-.9993-.4486-.9993-1.0002 0-.5515.4482-1.0001.9993-1.0001.5516 0 .9997.4486.9997 1.0001 0 .5516-.4481 1.0002-.9997 1.0002m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.411 13.856 8.125 12 8.125c-1.8561 0-3.5902.286-5.1368.8247L4.8409 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.7774h24c-.3432-4.1185-2.6889-7.5907-6.1185-9.456" />
+              </svg>
+              <span>ดาวน์โหลด APK</span>
+            </a>
           </div>
         </div>
       </header>
 
-      {/* Main Content Container */}
-      <div style={{ maxWidth: '1160px', margin: '0 auto', padding: '44px 24px 80px' }}>
-        {/* Hero Section */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-            gap: '28px',
-            alignItems: 'center',
-            marginBottom: '40px',
-          }}
-        >
-          <div>
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '6px 14px',
-                borderRadius: '999px',
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #CBD5E1',
-                fontSize: '12px',
-                fontWeight: 700,
-                color: '#0F172A',
-                marginBottom: '16px',
-              }}
-            >
-              <span style={{ color: '#10B981' }}>●</span> Standalone AI Nutrition & Progressive Overload OS
+      {/* ─── Hero Section with Phone Mockup ─── */}
+      <main className="flex-1">
+        <HeroSection />
+
+        {/* ─── 3-Pillars Bento Grid ─── */}
+        <PillarsBento />
+
+        {/* ─── Interactive Net Calorie & XP Simulator ─── */}
+        <InteractiveDemo />
+
+        {/* ─── Comparison Section ─── */}
+        <section id="compare" className="py-20 bg-[#0B1317] border-t border-white/5">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1A282F] border border-[#CE82FF]/30 text-xs font-black uppercase tracking-wider text-[#CE82FF]">
+                ⚡ THE NEW WAY TO STAY FIT
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+                ทำไมต้อง FeedMe 2.0?
+              </h2>
+              <p className="text-slate-400 text-sm">
+                ลืมแอปบันทึกแคลแบบเดิมๆ ที่น่าเบื่อและเต็มไปด้วยตัวเลขเครียดๆ ไปได้เลย
+              </p>
             </div>
 
-            <h1
-              style={{
-                fontSize: 'clamp(2.1rem, 4vw, 3.25rem)',
-                fontWeight: 900,
-                letterSpacing: '-0.035em',
-                lineHeight: 1.1,
-                color: '#0F172A',
-                marginBottom: '16px',
-              }}
-            >
-              Precision Nutrition &amp; Strength Coaching.{' '}
-              <span style={{ color: '#059669' }}>Zero Hardware Required.</span>
-            </h1>
+            <div className="rounded-3xl overflow-hidden border-2 border-[#23353D] bg-[#121E24]">
+              <div className="grid grid-cols-1 md:grid-cols-2">
+                {/* Old Apps */}
+                <div className="p-6 sm:p-8 border-b md:border-b-0 md:border-r border-[#23353D] bg-[#0E171C] space-y-4">
+                  <div className="flex items-center gap-2 text-slate-400 font-bold text-sm">
+                    <span className="text-red-400 text-lg">✕</span>
+                    <span>แอปนับแคลและฟิตเนสแบบเดิมๆ</span>
+                  </div>
+                  <ul className="space-y-3 text-xs sm:text-sm text-slate-400">
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-400 font-bold">−</span>
+                      <span>ต้องค้นหาฐานข้อมูลทีละรายการ แล้วพิมพ์กรอกกรัมมืออย่างน่าเบื่อ</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-400 font-bold">−</span>
+                      <span>ไม่เห็นภาพรวม Net Calories แยกกินกับออกกำลังกายคนละที่</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-400 font-bold">−</span>
+                      <span>ออกกำลังกายคนเดียว ว้าเหว่ ขาดแรงจูงใจ ทำได้ 3 วันก็เลิก</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-400 font-bold">−</span>
+                      <span>กินเกินแคลแล้วรู้สึกผิด โดนแอปดุ สร้างความเครียดให้ชีวิต</span>
+                    </li>
+                  </ul>
+                </div>
 
-            <p style={{ fontSize: '16px', color: '#475569', lineHeight: 1.65, marginBottom: '24px', maxWidth: '540px' }}>
-              Snap any Thai or international meal with Gemini Vision, select intuitive portion sizes (ทัพพี / จาน / กรัม),
-              track real-time Net Energy Balance, and get automatic +2.5 kg Progressive Overload targets.
+                {/* FeedMe 2.0 */}
+                <div className="p-6 sm:p-8 bg-gradient-to-br from-[#132B1E] via-[#0F2217] to-[#0A1710] space-y-4">
+                  <div className="flex items-center gap-2 text-[#58CC02] font-black text-sm">
+                    <span className="text-[#58CC02] text-lg">✓</span>
+                    <span>FeedMe 2.0 Gamified Ecosystem</span>
+                  </div>
+                  <ul className="space-y-3 text-xs sm:text-sm text-slate-200 font-medium">
+                    <li className="flex items-start gap-2">
+                      <span className="text-[#58CC02] font-black">✓</span>
+                      <span>
+                        <strong className="text-white">Smart Kitchen & BLE Scale:</strong> ถ่ายรูปแชะเดียวรู้แคล หรือชั่งลงชามรู้ผลทันที
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-[#58CC02] font-black">✓</span>
+                      <span>
+                        <strong className="text-white">Real-time Net Calories:</strong> กิน − เผาผลาญ (วิ่ง GPS + เวท) = โควต้าที่เหลือแม่นยำ
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-[#58CC02] font-black">✓</span>
+                      <span>
+                        <strong className="text-white">Duolingo Gamification:</strong> ลีกรายสัปดาห์, Streak Fire, และเควสช่วยเพื่อนตีบอส
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-[#58CC02] font-black">✓</span>
+                      <span>
+                        <strong className="text-white">Positive & Playful:</strong> กินเกินก็มีเควสเดินเล่นชิลๆ ชดเชยได้ ไม่ต้องกังวล
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── Download CTA Section ─── */}
+        <section id="download" className="py-20 bg-gradient-to-b from-[#0F172A] to-[#070D18] relative">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1A282F] border border-[#58CC02]/30 text-xs font-black uppercase tracking-wider text-[#58CC02]">
+              🚀 READY TO PLAY
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
+              พร้อมเปลี่ยนการคุมอาหาร <br />
+              ให้เป็นเกมที่คุณรักแล้วหรือยัง?
+            </h2>
+
+            <p className="text-slate-300 text-sm sm:text-base max-w-xl mx-auto">
+              ดาวน์โหลด FeedMe 2.0 สำหรับ Android ได้ทันทีในรูปแบบไฟล์ APK ติดตั้งง่าย ปลอดภัย และเริ่มผจญภัยสู่รูปร่างที่ดีที่สุดได้เลยวันนี้
             </p>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-              <Link
-                href="/dashboard"
-                className="btn-primary"
-                style={{ width: 'auto', padding: '0 26px', minHeight: '48px', fontSize: '15px', textDecoration: 'none' }}
-              >
-                ⚡ Launch Dashboard
-              </Link>
-              <Link
-                href="/log"
-                className="btn-secondary"
-                style={{ width: 'auto', padding: '0 22px', minHeight: '48px', fontSize: '14px', textDecoration: 'none' }}
-              >
-                📸 Try AI Food Scanner
-              </Link>
-              <Link
-                href="/workout"
-                className="btn-secondary"
-                style={{ width: 'auto', padding: '0 22px', minHeight: '48px', fontSize: '14px', textDecoration: 'none' }}
-              >
-                🏋️ Progressive Overload Coach
-              </Link>
-            </div>
-          </div>
-
-          {/* Signature Dark Midnight Navy Hero Bento Card */}
-          <div className="bento-hero" style={{ padding: '26px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-              <div>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    fontWeight: 800,
-                    letterSpacing: '0.08em',
-                    color: '#38BDF8',
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  LIVE NET ENERGY BALANCE
+            {/* Tactile Big Download Card */}
+            <div className="p-6 sm:p-8 rounded-3xl bg-[#14232B] border-2 border-[#58CC02]/50 max-w-lg mx-auto shadow-2xl space-y-5">
+              <div className="flex items-center justify-between text-xs text-slate-300 font-bold border-b border-white/10 pb-3">
+                <span className="flex items-center gap-1.5 text-white">
+                  <span>📱</span> FeedMe Mobile Client
                 </span>
-                <p style={{ fontSize: '13px', color: '#94A3B8', marginTop: '2px' }}>
-                  Mifflin-St Jeor TDEE · Food In − Workout Burn
-                </p>
+                <span className="text-[#58CC02]">v2.0.0 (Native Flutter)</span>
               </div>
-              <span
-                style={{
-                  backgroundColor: 'rgba(16, 185, 129, 0.18)',
-                  color: '#34D399',
-                  border: '1px solid rgba(16, 185, 129, 0.35)',
-                  padding: '5px 12px',
-                  borderRadius: '999px',
-                  fontSize: '12px',
-                  fontWeight: 800,
-                }}
+
+              {/* Download Button */}
+              <a
+                href="#download"
+                className="w-full inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-[#58CC02] hover:bg-[#4EBA02] text-white font-black text-base sm:text-lg tracking-wide border-b-4 border-[#3D8F00] active:border-b-0 active:translate-y-1 shadow-[0_12px_24px_-6px_rgba(88,204,2,0.4)] transition-all cursor-pointer"
               >
-                Lv.{level} {levelTitle} · {xp} XP
-              </span>
-            </div>
+                <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                  <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-1.0002 0-.5515.4482-1.0001.9993-1.0001.5516 0 .9997.4486.9997 1.0001 0 .5516-.4481 1.0002-.9997 1.0002m-11.046 0c-.5511 0-.9993-.4486-.9993-1.0002 0-.5515.4482-1.0001.9993-1.0001.5516 0 .9997.4486.9997 1.0001 0 .5516-.4481 1.0002-.9997 1.0002m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.411 13.856 8.125 12 8.125c-1.8561 0-3.5902.286-5.1368.8247L4.8409 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.7774h24c-.3432-4.1185-2.6889-7.5907-6.1185-9.456" />
+                </svg>
+                <span>ดาวน์โหลดสำหรับ Android (APK)</span>
+              </a>
 
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1.2fr 1fr',
-                gap: '18px',
-                alignItems: 'center',
-                backgroundColor: 'rgba(15, 23, 42, 0.55)',
-                border: '1px solid rgba(148, 163, 184, 0.16)',
-                borderRadius: '16px',
-                padding: '18px',
-                marginBottom: '16px',
-              }}
-            >
-              <div>
-                <p style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-0.04em', color: '#FFFFFF', lineHeight: 1 }}>
-                  {netKcal.toLocaleString()}{' '}
-                  <span style={{ fontSize: '14px', fontWeight: 600, color: '#94A3B8' }}>/ {tdeeGoal.toLocaleString()} kcal</span>
-                </p>
-                <p style={{ fontSize: '12px', color: '#10B981', fontWeight: 700, marginTop: '6px' }}>
-                  {remainingKcal.toLocaleString()} kcal remaining today
-                </p>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#94A3B8' }}>🍱 Eaten</span>
-                  <span style={{ color: '#F8FAFC', fontWeight: 700 }}>+{totalEaten.toLocaleString()} kcal</span>
+              {/* Install instructions */}
+              <div className="text-left text-xs text-slate-400 space-y-1 pt-2">
+                <div className="font-bold text-slate-300">วิธีติดตั้งง่ายๆ 3 ขั้นตอน:</div>
+                <div className="flex gap-2">
+                  <span className="font-bold text-[#58CC02]">1.</span>
+                  <span>แตะปุ่มดาวน์โหลดไฟล์ APK ลงในโทรศัพท์ Android</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#94A3B8' }}>🔥 Burned</span>
-                  <span style={{ color: '#34D399', fontWeight: 700 }}>-{loggedBurnKcal.toLocaleString()} kcal</span>
+                <div className="flex gap-2">
+                  <span className="font-bold text-[#58CC02]">2.</span>
+                  <span>เปิดไฟล์ที่ดาวน์โหลดมา แล้วเลือก &apos;ติดตั้ง (Install)&apos;</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#94A3B8' }}>💧 Hydration</span>
-                  <span style={{ color: '#38BDF8', fontWeight: 700 }}>{waterMl} / 2500 ml</span>
+                <div className="flex gap-2">
+                  <span className="font-bold text-[#58CC02]">3.</span>
+                  <span>เปิดแอป FeedMe 2.0 และเริ่มเล่นเกมฟิตเนสได้ทันที!</span>
                 </div>
               </div>
             </div>
 
-            {/* 3 Macro Bars */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-              {[
-                { label: 'Protein', val: `${Math.round(88 + dishProtein)}g / 180g`, pct: Math.min(100, Math.round(((88 + dishProtein) / 180) * 100)), color: '#38BDF8' },
-                { label: 'Carbs', val: `${Math.round(110 + dishCarbs)}g / 240g`, pct: Math.min(100, Math.round(((110 + dishCarbs) / 240) * 100)), color: '#10B981' },
-                { label: 'Fat', val: `${Math.round(32 + dishFat)}g / 80g`, pct: Math.min(100, Math.round(((32 + dishFat) / 80) * 100)), color: '#F59E0B' },
-              ].map(m => (
-                <div
-                  key={m.label}
-                  style={{
-                    backgroundColor: 'rgba(30, 41, 59, 0.85)',
-                    border: '1px solid rgba(148, 163, 184, 0.15)',
-                    borderRadius: '12px',
-                    padding: '10px 12px',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '6px' }}>
-                    <span style={{ color: '#94A3B8', fontWeight: 700 }}>{m.label}</span>
-                    <span style={{ color: '#F8FAFC', fontWeight: 700 }}>{m.val}</span>
-                  </div>
-                  <div style={{ height: '5px', backgroundColor: 'rgba(148, 163, 184, 0.2)', borderRadius: '999px', overflow: 'hidden' }}>
-                    <div style={{ width: `${m.pct}%`, height: '100%', backgroundColor: m.color, borderRadius: '999px' }} />
-                  </div>
-                </div>
-              ))}
+            {/* iOS Coming Soon notice */}
+            <div className="inline-flex items-center gap-2 text-xs text-slate-400">
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.63-.79 1.07-1.89.95-3-.98.04-2.19.67-2.88 1.48-.61.71-1.14 1.83-1 2.94 1.1.09 2.26-.59 2.93-1.42z" />
+              </svg>
+              <span>กำลังเตรียมเปิดให้ทดสอบบน Apple TestFlight & App Store เร็วๆ นี้</span>
             </div>
+          </div>
+        </section>
+      </main>
+
+      {/* ─── Footer ─── */}
+      <footer className="bg-[#080D15] border-t border-white/5 py-10 text-xs text-slate-500">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="font-black text-slate-300">FEEDME 2.0</span>
+            <span>· Gamified Fitness & Smart Nutrition Ecosystem</span>
+          </div>
+          <div>
+            <span>© 2026 FeedMe. All rights reserved. Designed for health champions.</span>
           </div>
         </div>
-
-        {/* Interactive Bento Playground Grid */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-            gap: '20px',
-          }}
-        >
-          {/* Bento Card 1: Interactive AI Dish & Smart Portion Simulator */}
-          <div className="card" style={{ padding: '24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-              <div>
-                <span className="text-label" style={{ color: '#059669' }}>📸 AI Food Vision + Smart Portions</span>
-                <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>
-                  Instant Dish &amp; Portion Breakdown
-                </h2>
-              </div>
-              <span className="badge-accent">{Math.round(dish.confidence * 100)}% AI Confidence</span>
-            </div>
-
-            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '14px' }}>
-              {POPULAR_AI_FOOD_PRESETS.map((item, idx) => (
-                <button
-                  key={item.foodName}
-                  type="button"
-                  onClick={() => setSelectedDishIdx(idx)}
-                  style={{
-                    padding: '8px 12px',
-                    borderRadius: '12px',
-                    border: idx === selectedDishIdx ? '1.5px solid #10B981' : '1px solid #E2E8F0',
-                    backgroundColor: idx === selectedDishIdx ? 'rgba(16, 185, 129, 0.1)' : '#F8FAFC',
-                    color: idx === selectedDishIdx ? '#059669' : '#475569',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {item.emoji} {item.foodName.split('(')[0].trim()}
-                </button>
-              ))}
-            </div>
-
-            {/* Smart Portion Selector */}
-            <div
-              style={{
-                backgroundColor: '#F8FAFC',
-                border: '1px solid #E2E8F0',
-                borderRadius: '14px',
-                padding: '12px 14px',
-                marginBottom: '14px',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <span className="text-label">Smart Portion Selector (ไม่ต้องพึ่งตาชั่ง)</span>
-                <span style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A' }}>{dishGrams} g</span>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
-                {[
-                  { scale: 0.5, label: '0.5x ครึ่งจาน' },
-                  { scale: 1.0, label: '1x ปกติ' },
-                  { scale: 1.5, label: '1.5x พิเศษ' },
-                  { scale: 2.0, label: '2x จัมโบ้' },
-                ].map(p => (
-                  <button
-                    key={p.scale}
-                    type="button"
-                    onClick={() => setPortionMultiplier(p.scale)}
-                    style={{
-                      padding: '7px 6px',
-                      borderRadius: '10px',
-                      border: portionMultiplier === p.scale ? '1px solid #059669' : '1px solid #CBD5E1',
-                      backgroundColor: portionMultiplier === p.scale ? '#10B981' : '#FFFFFF',
-                      color: portionMultiplier === p.scale ? '#FFFFFF' : '#475569',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', textAlign: 'center' }}>
-              <div style={{ backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px' }}>
-                <p style={{ fontSize: '17px', fontWeight: 800, color: '#0F172A' }}>{dishKcal}</p>
-                <p className="text-label">kcal</p>
-              </div>
-              <div style={{ backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px' }}>
-                <p style={{ fontSize: '17px', fontWeight: 800, color: '#0284C7' }}>{dishProtein}g</p>
-                <p className="text-label">Protein</p>
-              </div>
-              <div style={{ backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px' }}>
-                <p style={{ fontSize: '17px', fontWeight: 800, color: '#059669' }}>{dishCarbs}g</p>
-                <p className="text-label">Carbs</p>
-              </div>
-              <div style={{ backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px' }}>
-                <p style={{ fontSize: '17px', fontWeight: 800, color: '#D97706' }}>{dishFat}g</p>
-                <p className="text-label">Fat</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Bento Card 2: AI Progressive Overload & Habit Coach */}
-          <div className="card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                <div>
-                  <span className="text-label" style={{ color: '#0284C7' }}>🏋️ AI Strength &amp; Cardio Coach</span>
-                  <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>
-                    Progressive Overload &amp; Daily Habits
-                  </h2>
-                </div>
-                <span className="badge-gold">+Coins &amp; XP</span>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
-                {SAMPLE_WORKOUTS.map(w => (
-                  <div
-                    key={w.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '12px',
-                      padding: '12px 14px',
-                      borderRadius: '14px',
-                      backgroundColor: '#F8FAFC',
-                      border: '1px solid #E2E8F0',
-                    }}
-                  >
-                    <div>
-                      <p style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>{w.name}</p>
-                      <p style={{ fontSize: '11px', color: '#059669', fontWeight: 600, marginTop: '2px' }}>
-                        ⚡ {w.overload} · -{w.kcal} kcal
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleLogWorkoutDemo(w)}
-                      style={{
-                        padding: '7px 12px',
-                        borderRadius: '10px',
-                        backgroundColor: '#0F172A',
-                        color: '#FFFFFF',
-                        border: 'none',
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        flexShrink: 0,
-                      }}
-                    >
-                      + Log Set
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Hydration Quick Bar */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 14px',
-                borderRadius: '14px',
-                backgroundColor: 'rgba(56, 189, 248, 0.1)',
-                border: '1px solid rgba(56, 189, 248, 0.25)',
-              }}
-            >
-              <div>
-                <p style={{ fontSize: '12px', fontWeight: 800, color: '#0284C7' }}>
-                  💧 Daily Hydration: {waterMl} / 2,500 ml
-                </p>
-                <p style={{ fontSize: '11px', color: '#475569' }}>
-                  One-tap water &amp; daily supplement checklist
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setWaterMl(w => Math.min(3500, w + 250))}
-                style={{
-                  padding: '7px 12px',
-                  borderRadius: '10px',
-                  backgroundColor: '#0284C7',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
-              >
-                +250 ml
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      </footer>
     </div>
   );
 }
