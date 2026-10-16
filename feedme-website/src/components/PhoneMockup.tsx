@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
-type TabKey = 'home' | 'kitchen' | 'workout' | 'league';
+export type PhoneTabKey = 'home' | 'kitchen' | 'workout' | 'league';
 
 interface QuestItem {
   id: string;
@@ -17,8 +17,20 @@ const AI_DISH_PRESETS = [
   { name: 'สลัดอกไก่ฉีก ไข่ต้มออนเซ็น', kcal: 340, p: 36, c: 18, f: 10, emoji: '🥗' },
 ];
 
-export default function PhoneMockup() {
-  const [activeTab, setActiveTab] = useState<TabKey>('home');
+interface PhoneMockupProps {
+  externalTab?: PhoneTabKey;
+  onTabChange?: (tab: PhoneTabKey) => void;
+}
+
+export default function PhoneMockup({ externalTab, onTabChange }: PhoneMockupProps) {
+  const [internalTab, setInternalTab] = useState<PhoneTabKey>('home');
+  const activeTab = externalTab ?? internalTab;
+
+  const setActiveTab = (tab: PhoneTabKey) => {
+    setInternalTab(tab);
+    onTabChange?.(tab);
+  };
+
   const [kitchenMode, setKitchenMode] = useState<'ai' | 'chef' | 'scale'>('ai');
   const [workoutMode, setWorkoutMode] = useState<'run' | 'lift'>('run');
   const [scaleWeight, setScaleWeight] = useState(185);
@@ -34,22 +46,32 @@ export default function PhoneMockup() {
     { id: 'q3', text: 'ยกเวทตาราง Push Day', xp: 100, completed: false },
   ]);
 
-  // 3D Perspective Tilt state
+  // 3D Perspective Tilt state with specular glare position
   const phoneRef = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
+  const [glare, setGlare] = useState({ x: 50, y: 50, opacity: 0 });
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
     if (!phoneRef.current) return;
     const rect = phoneRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    const rx = ((y / rect.height) - 0.5) * -10;
-    const ry = ((x / rect.width) - 0.5) * 10;
+    const rx = ((y / rect.height) - 0.5) * -14;
+    const ry = ((x / rect.width) - 0.5) * 14;
     setTilt({ rx, ry });
+    setGlare({
+      x: (x / rect.width) * 100,
+      y: (y / rect.height) * 100,
+      opacity: 0.15,
+    });
   };
 
   const handleMouseLeave = () => {
     setTilt({ rx: 0, ry: 0 });
+    setGlare(prev => ({ ...prev, opacity: 0 }));
   };
 
   const toggleQuest = (id: string) => {
@@ -61,7 +83,7 @@ export default function PhoneMockup() {
           setUserXp(curr => curr + delta);
           if (nextState) {
             setFloatingXp(`+${q.xp} XP!`);
-            setTimeout(() => setFloatingXp(null), 800);
+            setTimeout(() => setFloatingXp(null), 850);
           }
           return { ...q, completed: nextState };
         }
@@ -78,30 +100,56 @@ export default function PhoneMockup() {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{
-        transform: `perspective(1000px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
-        transition: tilt.rx === 0 && tilt.ry === 0 ? 'transform 0.4s ease-out' : 'none',
+        transform: `perspective(1200px) rotateX(${tilt.rx.toFixed(2)}deg) rotateY(${tilt.ry.toFixed(2)}deg)`,
+        transformStyle: 'preserve-3d',
+        transition: tilt.rx === 0 && tilt.ry === 0 ? 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)' : 'none',
       }}
       className="relative mx-auto w-full max-w-[340px] sm:max-w-[370px] select-none will-change-transform"
     >
-      {/* Floating XP Pop Notification */}
+      {/* Dynamic 3D Floating XP Pop Notification */}
       {floatingXp && (
-        <div className="absolute top-12 right-6 z-40 xp-float-anim bg-[#58CC02] text-white px-3 py-1 rounded-full text-xs font-black shadow-lg pointer-events-none">
+        <div
+          style={{ transform: 'translateZ(60px)' }}
+          className="absolute top-12 right-6 z-50 xp-float-anim bg-[#58CC02] text-white px-3.5 py-1.5 rounded-full text-xs font-black shadow-2xl pointer-events-none"
+        >
           ⚡ {floatingXp}
         </div>
       )}
 
-      {/* Outer Phone Shell with 3D Depth */}
-      <div className="relative rounded-[48px] p-3 bg-gradient-to-b from-[#334155] via-[#1E293B] to-[#0F172A] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.12)]">
-        {/* Dynamic Island / Speaker Notch */}
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-30 h-5 w-28 bg-black rounded-full flex items-center justify-center gap-2 px-2 shadow-inner">
+      {/* 3D Extruded Outer Phone Shell */}
+      <div
+        style={{ transformStyle: 'preserve-3d' }}
+        className="relative rounded-[50px] p-3.5 bg-gradient-to-b from-[#334155] via-[#1E293B] to-[#0B131E] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.8),0_0_0_2px_rgba(255,255,255,0.14),0_12px_24px_rgba(0,0,0,0.5)]"
+      >
+        {/* Dynamic Specular Glass Reflection Layer */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 rounded-[50px] transition-opacity duration-300 z-30"
+          style={{
+            opacity: glare.opacity,
+            background: `radial-gradient(circle 360px at ${glare.x}% ${glare.y}%, rgba(255,255,255,0.2), transparent 75%)`,
+          }}
+        />
+
+        {/* Dynamic Island Notch */}
+        <div
+          style={{ transform: 'translateZ(25px)' }}
+          className="absolute top-6 left-1/2 -translate-x-1/2 z-40 h-5 w-28 bg-black rounded-full flex items-center justify-center gap-2 px-2 shadow-inner"
+        >
           <div className="w-2.5 h-2.5 rounded-full bg-[#1E293B] border border-[#334155]" />
           <div className="w-2 h-2 rounded-full bg-[#059669]/60 animate-pulse" />
         </div>
 
         {/* Screen Bezel & Container */}
-        <div className="relative overflow-hidden rounded-[40px] bg-[#131F24] text-white border border-[#23353D] shadow-inner min-h-[660px] flex flex-col justify-between">
+        <div
+          style={{ transformStyle: 'preserve-3d' }}
+          className="relative overflow-hidden rounded-[42px] bg-[#131F24] text-white border border-[#23353D] shadow-inner min-h-[660px] flex flex-col justify-between"
+        >
           {/* Top Status Bar Inside Screen */}
-          <div className="pt-7 pb-2 px-5 flex items-center justify-between text-xs font-bold text-slate-400 border-b border-white/5 bg-[#131F24]/90 backdrop-blur z-20">
+          <div
+            style={{ transform: 'translateZ(15px)' }}
+            className="pt-7 pb-2 px-5 flex items-center justify-between text-xs font-bold text-slate-400 border-b border-white/5 bg-[#131F24]/90 backdrop-blur z-20"
+          >
             <span>09:41</span>
             <div className="flex items-center gap-2 text-[11px]">
               <span className="text-[#FF9600] flex items-center gap-0.5">🔥 12</span>
@@ -117,8 +165,11 @@ export default function PhoneMockup() {
             {/* TAB 1: HOME NET CALORIES */}
             {activeTab === 'home' && (
               <div className="space-y-3 animate-fade-in">
-                {/* Hero Net Calorie Card */}
-                <div className="rounded-2xl p-4 bg-[#1E293B] border border-[#334155] shadow-lg">
+                {/* Hero Net Calorie Card with 3D Z-Elevation */}
+                <div
+                  style={{ transform: 'translateZ(20px)' }}
+                  className="rounded-2xl p-4 bg-[#1E293B] border border-[#334155] shadow-lg"
+                >
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs font-black uppercase tracking-wider text-[#58CC02]">
                       ⚖️ สมดุลพลังงาน (Net Calories)
@@ -171,7 +222,10 @@ export default function PhoneMockup() {
                 </div>
 
                 {/* Daily Quests Card (Interactive Click-to-Check!) */}
-                <div className="rounded-2xl p-3.5 bg-[#1A282F] border border-[#2A3E47]">
+                <div
+                  style={{ transform: 'translateZ(15px)' }}
+                  className="rounded-2xl p-3.5 bg-[#1A282F] border border-[#2A3E47]"
+                >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-black text-white flex items-center gap-1.5">
                       <span>🎯 เควสประจำวัน (แตะเพื่อทำภารกิจ)</span>
@@ -215,7 +269,10 @@ export default function PhoneMockup() {
             {activeTab === 'kitchen' && (
               <div className="space-y-3 animate-fade-in">
                 {/* Mode Selector */}
-                <div className="flex rounded-xl bg-[#1A282F] p-1 border border-white/10 text-[11px] font-bold">
+                <div
+                  style={{ transform: 'translateZ(15px)' }}
+                  className="flex rounded-xl bg-[#1A282F] p-1 border border-white/10 text-[11px] font-bold"
+                >
                   <button
                     onClick={() => setKitchenMode('ai')}
                     className={`flex-1 py-1.5 rounded-lg transition-all ${
@@ -243,7 +300,10 @@ export default function PhoneMockup() {
                 </div>
 
                 {kitchenMode === 'ai' && (
-                  <div className="rounded-2xl p-4 bg-[#1A282F] border border-[#2A3E47] space-y-3 text-center">
+                  <div
+                    style={{ transform: 'translateZ(20px)' }}
+                    className="rounded-2xl p-4 bg-[#1A282F] border border-[#2A3E47] space-y-3 text-center"
+                  >
                     <div className="relative h-32 rounded-xl overflow-hidden bg-slate-900 border border-white/10 flex items-center justify-center group">
                       {/* Laser scanning beam */}
                       <div
@@ -285,7 +345,10 @@ export default function PhoneMockup() {
                 )}
 
                 {kitchenMode === 'chef' && (
-                  <div className="rounded-2xl p-3.5 bg-[#1A282F] border border-[#CE82FF]/40 space-y-2.5">
+                  <div
+                    style={{ transform: 'translateZ(20px)' }}
+                    className="rounded-2xl p-3.5 bg-[#1A282F] border border-[#CE82FF]/40 space-y-2.5"
+                  >
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-black text-[#CE82FF]">👨‍🍳 AI Recipe Chef</span>
                       <span className="text-[10px] bg-[#CE82FF]/20 text-purple-300 px-2 py-0.5 rounded-full font-bold">
@@ -325,7 +388,10 @@ export default function PhoneMockup() {
                 )}
 
                 {kitchenMode === 'scale' && (
-                  <div className="rounded-2xl p-4 bg-[#1A282F] border border-[#2A3E47] space-y-3">
+                  <div
+                    style={{ transform: 'translateZ(20px)' }}
+                    className="rounded-2xl p-4 bg-[#1A282F] border border-[#2A3E47] space-y-3"
+                  >
                     <div className="flex items-center justify-between text-[11px] text-[#1CB0F6] font-bold">
                       <span>⚡ BLE Connected: FeedMe Scale</span>
                       <span className="w-2 h-2 rounded-full bg-[#1CB0F6] animate-ping" />
@@ -369,7 +435,10 @@ export default function PhoneMockup() {
             {activeTab === 'workout' && (
               <div className="space-y-3 animate-fade-in">
                 {/* Mode Selector */}
-                <div className="flex rounded-xl bg-[#1A282F] p-1 border border-white/10 text-xs font-bold">
+                <div
+                  style={{ transform: 'translateZ(15px)' }}
+                  className="flex rounded-xl bg-[#1A282F] p-1 border border-white/10 text-xs font-bold"
+                >
                   <button
                     onClick={() => setWorkoutMode('run')}
                     className={`flex-1 py-1.5 rounded-lg transition-all ${
@@ -389,7 +458,10 @@ export default function PhoneMockup() {
                 </div>
 
                 {workoutMode === 'run' ? (
-                  <div className="rounded-2xl p-4 bg-[#1A282F] border border-[#FF9600]/40 space-y-3">
+                  <div
+                    style={{ transform: 'translateZ(20px)' }}
+                    className="rounded-2xl p-4 bg-[#1A282F] border border-[#FF9600]/40 space-y-3"
+                  >
                     <div className="relative h-28 rounded-xl overflow-hidden bg-slate-900 border border-white/10 flex items-center justify-center">
                       {/* Stylized Animated Neon GPS Map Route */}
                       <svg className="w-full h-full p-2" viewBox="0 0 200 100">
@@ -424,7 +496,10 @@ export default function PhoneMockup() {
                     </div>
                   </div>
                 ) : (
-                  <div className="rounded-2xl p-4 bg-[#1A282F] border border-[#CE82FF]/40 space-y-2.5">
+                  <div
+                    style={{ transform: 'translateZ(20px)' }}
+                    className="rounded-2xl p-4 bg-[#1A282F] border border-[#CE82FF]/40 space-y-2.5"
+                  >
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-black text-white">Push Day (อก/ไหล่/หลังแขน)</span>
                       <span className="text-[10px] bg-[#CE82FF]/20 text-[#CE82FF] px-2 py-0.5 rounded-full font-bold">
@@ -450,7 +525,10 @@ export default function PhoneMockup() {
             {/* TAB 4: LEAGUE */}
             {activeTab === 'league' && (
               <div className="space-y-3 animate-fade-in">
-                <div className="rounded-2xl p-4 bg-[#1A282F] border border-[#58CC02]/40 text-center space-y-2">
+                <div
+                  style={{ transform: 'translateZ(20px)' }}
+                  className="rounded-2xl p-4 bg-[#1A282F] border border-[#58CC02]/40 text-center space-y-2"
+                >
                   <div className="text-2xl">🏆</div>
                   <div className="text-sm font-black text-white">Emerald League (ลีกมรกต)</div>
                   <div className="text-[11px] text-slate-400">รีเซ็ตใน 2 วัน 14 ชั่วโมง</div>
@@ -481,7 +559,10 @@ export default function PhoneMockup() {
                   </div>
 
                   {/* Boss Raid Party Badge with Opt-in Button */}
-                  <div className="mt-3 p-2.5 rounded-xl bg-[#162329] border border-[#2B3E47] text-left text-xs space-y-2">
+                  <div
+                    style={{ transform: 'translateZ(25px)' }}
+                    className="mt-3 p-2.5 rounded-xl bg-[#162329] border border-[#2B3E47] text-left text-xs space-y-2"
+                  >
                     <div className="flex justify-between items-center">
                       <div className="font-black text-[#CE82FF] flex items-center gap-1">
                         <span>👾 บอสไขมันทรานส์ (Co-op Raid)</span>
@@ -517,7 +598,10 @@ export default function PhoneMockup() {
           </div>
 
           {/* Bottom App Navigation Bar Inside Phone */}
-          <div className="p-2 bg-[#131F24] border-t border-white/10 grid grid-cols-4 gap-1 text-center text-[10px] font-bold z-20">
+          <div
+            style={{ transform: 'translateZ(15px)' }}
+            className="p-2 bg-[#131F24] border-t border-white/10 grid grid-cols-4 gap-1 text-center text-[10px] font-bold z-20"
+          >
             <button
               onClick={() => setActiveTab('home')}
               className={`py-2 rounded-xl transition-all ${

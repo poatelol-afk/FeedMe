@@ -273,7 +273,7 @@
   /* ─── Purposeful Motion & Reveal Choreography ─── */
   .reveal-on-scroll {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translate3d(0, 24px, -20px) rotateX(4deg);
     transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
     transition-delay: var(--stagger-delay, 0ms);
     will-change: opacity, transform;
@@ -281,7 +281,80 @@
 
   .reveal-on-scroll.is-visible {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0) rotateX(0deg);
+  }
+
+  /* ─── 3D Spatial Stage & Depth Utilities ─── */
+  .perspective-stage {
+    perspective: 1200px;
+  }
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .translate-z-10 { transform: translateZ(10px); }
+  .translate-z-20 { transform: translateZ(20px); }
+  .translate-z-30 { transform: translateZ(30px); }
+  .translate-z-40 { transform: translateZ(40px); }
+  .translate-z-50 { transform: translateZ(50px); }
+  .translate-z-60 { transform: translateZ(60px); }
+
+  /* 3D Tactile Physical Buttons (Box extrusion with no border clash) */
+  .btn-3d-green {
+    background-color: #58CC02;
+    color: #FFFFFF;
+    box-shadow: 0 4px 0 #3D8F00;
+    transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
+  }
+  .btn-3d-green:hover {
+    filter: brightness(1.05);
+  }
+  .btn-3d-green:active {
+    box-shadow: 0 0 0 #3D8F00;
+    transform: translateY(4px);
+  }
+
+  .btn-3d-orange {
+    background-color: #FF9600;
+    color: #FFFFFF;
+    box-shadow: 0 4px 0 #CC7800;
+    transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
+  }
+  .btn-3d-orange:hover {
+    filter: brightness(1.05);
+  }
+  .btn-3d-orange:active {
+    box-shadow: 0 0 0 #CC7800;
+    transform: translateY(4px);
+  }
+
+  .btn-3d-cyan {
+    background-color: #1CB0F6;
+    color: #FFFFFF;
+    box-shadow: 0 4px 0 #0284C7;
+    transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
+  }
+  .btn-3d-cyan:hover {
+    filter: brightness(1.05);
+  }
+  .btn-3d-cyan:active {
+    box-shadow: 0 0 0 #0284C7;
+    transform: translateY(4px);
+  }
+
+  .btn-3d-slate {
+    background-color: #1E293B;
+    color: #F8FAFC;
+    box-shadow: 0 4px 0 #0F172A;
+    transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease;
+  }
+  .btn-3d-slate:hover {
+    background-color: #28384E;
+  }
+  .btn-3d-slate:active {
+    box-shadow: 0 0 0 #0F172A;
+    transform: translateY(4px);
   }
 
   .xp-float-anim {
@@ -293,6 +366,15 @@
     stroke-dashoffset: 600;
     animation: gpsDash 2.4s cubic-bezier(0.16, 1, 0.3, 1) forwards infinite;
   }
+
+  .float-3d-anim {
+    animation: float3d 4s ease-in-out infinite;
+  }
+}
+
+@keyframes float3d {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(1deg); }
 }
 
 @keyframes gpsDash {
@@ -312,8 +394,15 @@
     transition: none !important;
   }
   .xp-float-anim,
-  .gps-route-anim {
+  .gps-route-anim,
+  .float-3d-anim {
     animation: none !important;
     stroke-dashoffset: 0 !important;
+  }
+  .btn-3d-green:active,
+  .btn-3d-orange:active,
+  .btn-3d-cyan:active,
+  .btn-3d-slate:active {
+    transform: none !important;
   }
 }

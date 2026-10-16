@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import HeroSection from '@/components/HeroSection';
 import PillarsBento from '@/components/PillarsBento';
 import InteractiveDemo from '@/components/InteractiveDemo';
-import { ScrollReveal } from '@/components/ui/ScrollReveal';
+import { ScrollReveal, TiltCard3D } from '@/components/ui/ScrollReveal';
 
 export default function LandingPage() {
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -69,7 +69,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-3">
             <a
               href="#download"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#58CC02] hover:bg-[#4EBA02] text-white text-xs font-black tracking-wide shadow-[0_2px_0_#3D8F00] active:shadow-none active:translate-y-0.5 transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl btn-3d-green text-xs font-black tracking-wide cursor-pointer"
             >
               <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
                 <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-1.0002 0-.5515.4482-1.0001.9993-1.0001.5516 0 .9997.4486.9997 1.0001 0 .5516-.4481 1.0002-.9997 1.0002m-11.046 0c-.5511 0-.9993-.4486-.9993-1.0002 0-.5515.4482-1.0001.9993-1.0001.5516 0 .9997.4486.9997 1.0001 0 .5516-.4481 1.0002-.9997 1.0002m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.411 13.856 8.125 12 8.125c-1.8561 0-3.5902.286-5.1368.8247L4.8409 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.7774h24c-.3432-4.1185-2.6889-7.5907-6.1185-9.456" />
@@ -91,7 +91,7 @@ export default function LandingPage() {
         <InteractiveDemo />
 
         {/* ─── Comparison Section ─── */}
-        <section id="compare" className="py-20 bg-[#0B1317] border-t border-white/5">
+        <section id="compare" className="py-20 bg-[#0B1317] border-t border-white/5 perspective-stage">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <ScrollReveal className="text-center max-w-2xl mx-auto mb-12 space-y-3">
               <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
@@ -102,15 +102,15 @@ export default function LandingPage() {
               </p>
             </ScrollReveal>
 
-            <ScrollReveal staggerDelayMs={150} className="rounded-3xl overflow-hidden border-2 border-[#23353D] bg-[#121E24] shadow-2xl">
-              <div className="grid grid-cols-1 md:grid-cols-2">
-                {/* Old Apps */}
-                <div className="p-6 sm:p-8 border-b md:border-b-0 md:border-r border-[#23353D] bg-[#0E171C] space-y-4">
-                  <div className="flex items-center gap-2 text-slate-400 font-bold text-sm">
+            <ScrollReveal staggerDelayMs={150}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+                {/* Old Flat Recessed Apps */}
+                <div className="p-6 sm:p-8 rounded-3xl border border-white/10 bg-[#0E171C]/90 text-slate-400 space-y-4">
+                  <div className="flex items-center gap-2 font-bold text-sm text-slate-300">
                     <span className="text-red-400 text-lg">✕</span>
                     <span>แอปนับแคลและฟิตเนสแบบเดิมๆ</span>
                   </div>
-                  <ul className="space-y-3 text-xs sm:text-sm text-slate-400">
+                  <ul className="space-y-3 text-xs sm:text-sm">
                     <li className="flex items-start gap-2">
                       <span className="text-red-400 font-bold">−</span>
                       <span>ต้องค้นหาฐานข้อมูลทีละรายการ แล้วพิมพ์กรอกกรัมมืออย่างน่าเบื่อ</span>
@@ -130,13 +130,16 @@ export default function LandingPage() {
                   </ul>
                 </div>
 
-                {/* FeedMe 2.0 */}
-                <div className="p-6 sm:p-8 bg-gradient-to-br from-[#132B1E] via-[#0F2217] to-[#0A1710] space-y-4">
-                  <div className="flex items-center gap-2 text-[#58CC02] font-black text-sm">
+                {/* FeedMe 2.0 Elevated 3D Tilt Card */}
+                <TiltCard3D
+                  spotlightColor="rgba(88, 204, 2, 0.22)"
+                  className="p-6 sm:p-8 rounded-3xl border-2 border-[#58CC02]/50 bg-gradient-to-br from-[#132B1E] via-[#0F2217] to-[#0A1710] shadow-2xl space-y-4"
+                >
+                  <div style={{ transform: 'translateZ(20px)' }} className="flex items-center gap-2 text-[#58CC02] font-black text-sm">
                     <span className="text-[#58CC02] text-lg">✓</span>
                     <span>FeedMe 2.0 Gamified Ecosystem</span>
                   </div>
-                  <ul className="space-y-3 text-xs sm:text-sm text-slate-200 font-medium">
+                  <ul style={{ transform: 'translateZ(25px)' }} className="space-y-3 text-xs sm:text-sm text-slate-200 font-medium">
                     <li className="flex items-start gap-2">
                       <span className="text-[#58CC02] font-black">✓</span>
                       <span>
@@ -162,14 +165,14 @@ export default function LandingPage() {
                       </span>
                     </li>
                   </ul>
-                </div>
+                </TiltCard3D>
               </div>
             </ScrollReveal>
           </div>
         </section>
 
         {/* ─── Download CTA Section ─── */}
-        <section id="download" className="py-20 bg-gradient-to-b from-[#0F172A] to-[#070D18] relative">
+        <section id="download" className="py-20 bg-gradient-to-b from-[#0F172A] to-[#070D18] relative perspective-stage">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
             <ScrollReveal className="space-y-4">
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
@@ -181,47 +184,54 @@ export default function LandingPage() {
               </p>
             </ScrollReveal>
 
-            {/* Tactile Big Download Card */}
-            <ScrollReveal staggerDelayMs={150} className="p-6 sm:p-8 rounded-3xl bg-[#14232B] border-2 border-[#58CC02]/50 max-w-lg mx-auto shadow-2xl space-y-5">
-              <div className="flex items-center justify-between text-xs text-slate-300 font-bold border-b border-white/10 pb-3">
-                <span className="flex items-center gap-1.5 text-white">
-                  <span>📱</span> FeedMe Mobile Client
-                </span>
-                <span className="text-[#58CC02]">v2.0.0 (Native Flutter)</span>
-              </div>
-
-              {/* Download Button */}
-              <a
-                href="#download"
-                className="w-full inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-[#58CC02] hover:bg-[#4EBA02] text-white font-black text-base sm:text-lg tracking-wide shadow-[0_4px_0_#3D8F00] active:shadow-none active:translate-y-1 transition-all cursor-pointer"
+            {/* 3D Tactile Download Shrine Card */}
+            <ScrollReveal staggerDelayMs={150}>
+              <TiltCard3D
+                spotlightColor="rgba(88, 204, 2, 0.25)"
+                className="p-6 sm:p-8 rounded-3xl bg-[#14232B] border-2 border-[#58CC02]/50 max-w-lg mx-auto shadow-2xl space-y-5"
               >
-                <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
-                  <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-1.0002 0-.5515.4482-1.0001.9993-1.0001.5516 0 .9997.4486.9997 1.0001 0 .5516-.4481 1.0002-.9997 1.0002m-11.046 0c-.5511 0-.9993-.4486-.9993-1.0002 0-.5515.4482-1.0001.9993-1.0001.5516 0 .9997.4486.9997 1.0001 0 .5516-.4481 1.0002-.9997 1.0002m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.411 13.856 8.125 12 8.125c-1.8561 0-3.5902.286-5.1368.8247L4.8409 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.7774h24c-.3432-4.1185-2.6889-7.5907-6.1185-9.456" />
-                </svg>
-                <span>ดาวน์โหลดสำหรับ Android (APK)</span>
-              </a>
+                <div style={{ transform: 'translateZ(15px)' }} className="flex items-center justify-between text-xs text-slate-300 font-bold border-b border-white/10 pb-3">
+                  <span className="flex items-center gap-1.5 text-white">
+                    <span>📱</span> FeedMe Mobile Client
+                  </span>
+                  <span className="text-[#58CC02]">v2.0.0 (Native Flutter)</span>
+                </div>
 
-              {/* 3-Step Horizontal Pills */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-xs">
-                <div className="p-2.5 rounded-xl bg-[#0D181F] border border-white/5 flex items-center gap-2 text-slate-300">
-                  <span className="w-5 h-5 rounded-full bg-[#58CC02]/20 text-[#58CC02] flex items-center justify-center font-black text-[10px]">
-                    1
-                  </span>
-                  <span>ดาวน์โหลด APK</span>
+                {/* 3D Download Button */}
+                <div style={{ transform: 'translateZ(25px)' }}>
+                  <a
+                    href="#download"
+                    className="w-full inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl btn-3d-green font-black text-base sm:text-lg tracking-wide cursor-pointer"
+                  >
+                    <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                      <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-1.0002 0-.5515.4482-1.0001.9993-1.0001.5516 0 .9997.4486.9997 1.0001 0 .5516-.4481 1.0002-.9997 1.0002m-11.046 0c-.5511 0-.9993-.4486-.9993-1.0002 0-.5515.4482-1.0001.9993-1.0001.5516 0 .9997.4486.9997 1.0001 0 .5516-.4481 1.0002-.9997 1.0002m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.411 13.856 8.125 12 8.125c-1.8561 0-3.5902.286-5.1368.8247L4.8409 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.7774h24c-.3432-4.1185-2.6889-7.5907-6.1185-9.456" />
+                    </svg>
+                    <span>ดาวน์โหลดสำหรับ Android (APK)</span>
+                  </a>
                 </div>
-                <div className="p-2.5 rounded-xl bg-[#0D181F] border border-white/5 flex items-center gap-2 text-slate-300">
-                  <span className="w-5 h-5 rounded-full bg-[#58CC02]/20 text-[#58CC02] flex items-center justify-center font-black text-[10px]">
-                    2
-                  </span>
-                  <span>กดติดตั้งบนเครื่อง</span>
+
+                {/* 3-Step Horizontal 3D Pills */}
+                <div style={{ transform: 'translateZ(20px)' }} className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-xs">
+                  <div className="p-2.5 rounded-xl bg-[#0D181F] border border-white/5 flex items-center gap-2 text-slate-300">
+                    <span className="w-5 h-5 rounded-full bg-[#58CC02]/20 text-[#58CC02] flex items-center justify-center font-black text-[10px]">
+                      1
+                    </span>
+                    <span>ดาวน์โหลด APK</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-[#0D181F] border border-white/5 flex items-center gap-2 text-slate-300">
+                    <span className="w-5 h-5 rounded-full bg-[#58CC02]/20 text-[#58CC02] flex items-center justify-center font-black text-[10px]">
+                      2
+                    </span>
+                    <span>กดติดตั้งบนเครื่อง</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-[#0D181F] border border-white/5 flex items-center gap-2 text-slate-300">
+                    <span className="w-5 h-5 rounded-full bg-[#58CC02]/20 text-[#58CC02] flex items-center justify-center font-black text-[10px]">
+                      3
+                    </span>
+                    <span>เริ่มเล่นได้ทันที</span>
+                  </div>
                 </div>
-                <div className="p-2.5 rounded-xl bg-[#0D181F] border border-white/5 flex items-center gap-2 text-slate-300">
-                  <span className="w-5 h-5 rounded-full bg-[#58CC02]/20 text-[#58CC02] flex items-center justify-center font-black text-[10px]">
-                    3
-                  </span>
-                  <span>เริ่มเล่นได้ทันที</span>
-                </div>
-              </div>
+              </TiltCard3D>
             </ScrollReveal>
 
             {/* iOS Coming Soon notice */}

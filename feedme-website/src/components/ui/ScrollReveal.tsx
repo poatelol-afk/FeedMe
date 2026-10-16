@@ -11,7 +11,7 @@ interface ScrollRevealProps {
 /**
  * ScrollReveal Component
  * Smoothly reveals content as it scrolls into view using IntersectionObserver
- * and cubic-bezier(0.16, 1, 0.3, 1) exponential deceleration.
+ * and cubic-bezier(0.16, 1, 0.3, 1) exponential deceleration in 3D space.
  */
 export function ScrollReveal({
   children,
@@ -98,4 +98,87 @@ export function useAnimatedNumber(targetValue: number, durationMs = 380): number
   }, [targetValue, durationMs]);
 
   return currentValue;
+}
+
+interface TiltCard3DProps extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
+  className?: string;
+  maxTiltDeg?: number;
+  spotlightColor?: string;
+  glare?: boolean;
+}
+
+/**
+ * TiltCard3D Component
+ * Interactive 3D spatial card primitive with mouse-directed rotateX/rotateY,
+ * dynamic specular spotlight glare overlay, and transform-style: preserve-3d.
+ */
+export function TiltCard3D({
+  children,
+  className = '',
+  maxTiltDeg = 8,
+  spotlightColor = 'rgba(88, 204, 2, 0.15)',
+  glare = true,
+  style,
+  ...props
+}: TiltCard3DProps) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
+  const [glarePos, setGlarePos] = useState({ x: 50, y: 50, opacity: 0 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+    const card = cardRef.current;
+    if (!card) return;
+
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const rx = ((y / rect.height) - 0.5) * -maxTiltDeg;
+    const ry = ((x / rect.width) - 0.5) * maxTiltDeg;
+
+    setTilt({ rx, ry });
+    setGlarePos({
+      x: (x / rect.width) * 100,
+      y: (y / rect.height) * 100,
+      opacity: 1,
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setTilt({ rx: 0, ry: 0 });
+    setGlarePos(prev => ({ ...prev, opacity: 0 }));
+  };
+
+  return (
+    <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        transform: `perspective(1000px) rotateX(${tilt.rx.toFixed(2)}deg) rotateY(${tilt.ry.toFixed(2)}deg)`,
+        transformStyle: 'preserve-3d',
+        transition: tilt.rx === 0 && tilt.ry === 0 ? 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)' : 'none',
+        ...style,
+      }}
+      className={`relative will-change-transform ${className}`}
+      {...props}
+    >
+      {/* Specular Glare Spotlight Layer */}
+      {glare && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 rounded-[inherit] transition-opacity duration-300 z-10"
+          style={{
+            opacity: glarePos.opacity,
+            background: `radial-gradient(circle 320px at ${glarePos.x}% ${glarePos.y}%, ${spotlightColor}, transparent 80%)`,
+          }}
+        />
+      )}
+      {children}
+    </div>
+  );
 }
