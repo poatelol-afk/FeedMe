@@ -107,4 +107,30 @@ test('FeedMe Mobile Task 4 Home and Kitchen Screen Verification', async (t) => {
   });
 });
 
+test('FeedMe Mobile Task 5 Workout and League Screen Verification', async (t) => {
+  await t.test('workout_screen.dart exists with GPS run painter and weight training logger', () => {
+    const workoutPath = path.join(mobileDir, 'lib/features/workout/workout_screen.dart');
+    assert.strictEqual(fs.existsSync(workoutPath), true, 'workout_screen.dart must exist');
+    const content = fs.readFileSync(workoutPath, 'utf-8');
+
+    assert.ok(content.includes('class WorkoutScreen'), 'Must define WorkoutScreen');
+    assert.ok(content.includes('วิ่ง GPS'), 'Must include GPS Run mode');
+    assert.ok(content.includes('เวทเทรนนิ่ง'), 'Must include Weight Training mode');
+    assert.ok(content.includes('controller.recordSimulatedGpsRun'), 'Must wire recordSimulatedGpsRun');
+    assert.ok(content.includes('controller.toggleExerciseSet'), 'Must wire toggleExerciseSet');
+  });
+
+  await t.test('league_screen.dart exists with Weekly Leaderboard and Opt-in Party Raid', () => {
+    const leaguePath = path.join(mobileDir, 'lib/features/league/league_screen.dart');
+    assert.strictEqual(fs.existsSync(leaguePath), true, 'league_screen.dart must exist');
+    const content = fs.readFileSync(leaguePath, 'utf-8');
+
+    assert.ok(content.includes('class LeagueScreen'), 'Must define LeagueScreen');
+    assert.ok(content.includes('ลีกมรกต') || content.includes('Emerald League'), 'Must display league name');
+    assert.ok(content.includes('ชวนเพื่อนตั้งตี้'), 'Must include opt-in Party Quest button');
+    assert.ok(content.includes('controller.togglePartyQuestJoin'), 'Must wire togglePartyQuestJoin');
+  });
+});
+
+
 
