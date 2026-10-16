@@ -51,3 +51,33 @@ test('FeedMe Mobile Task 2 RED Verification', async (t) => {
     assert.ok(themeContent.includes('0xFF46A302'), 'Theme featherGreenShadow must be #46A302');
   });
 });
+
+test('FeedMe Mobile Task 3 Controller & Kitchen Service Verification', async (t) => {
+  await t.test('mock_kitchen_service.dart exists with datasets and recipe filtering', () => {
+    const servicePath = path.join(mobileDir, 'lib/core/services/mock_kitchen_service.dart');
+    assert.strictEqual(fs.existsSync(servicePath), true, 'mock_kitchen_service.dart must exist');
+    const content = fs.readFileSync(servicePath, 'utf-8');
+
+    assert.ok(content.includes('class MockKitchenService'), 'Must define MockKitchenService');
+    assert.ok(content.includes('static List<MealEntry> get presetAiDishes'), 'Must provide presetAiDishes');
+    assert.ok(content.includes('static List<ScaleIngredient> get scaleIngredients'), 'Must provide scaleIngredients');
+    assert.ok(content.includes('static List<RecipeSuggestion> getSuggestedRecipes'), 'Must provide getSuggestedRecipes');
+  });
+
+  await t.test('feedme_controller.dart exists with reactive state and formulas', () => {
+    const controllerPath = path.join(mobileDir, 'lib/core/services/feedme_controller.dart');
+    assert.strictEqual(fs.existsSync(controllerPath), true, 'feedme_controller.dart must exist');
+    const content = fs.readFileSync(controllerPath, 'utf-8');
+
+    assert.ok(content.includes('class FeedMeController extends ChangeNotifier'), 'Must extend ChangeNotifier');
+    assert.ok(content.includes('int get netCalories => consumedCalories - burnedCalories;'), 'Must calculate netCalories');
+    assert.ok(content.includes('int get remainingQuota => targetDailyCalories - netCalories;'), 'Must calculate remainingQuota');
+    assert.ok(content.includes('String get calorieStatusMessage'), 'Must provide calorieStatusMessage');
+    assert.ok(content.includes('void tareScale()'), 'Must provide tareScale');
+    assert.ok(content.includes('void sendScaleWeightToBowl()'), 'Must provide sendScaleWeightToBowl');
+    assert.ok(content.includes('void recordSimulatedGpsRun'), 'Must provide recordSimulatedGpsRun');
+    assert.ok(content.includes('void toggleExerciseSet'), 'Must provide toggleExerciseSet');
+    assert.ok(content.includes('void togglePartyQuestJoin'), 'Must provide togglePartyQuestJoin');
+  });
+});
+
