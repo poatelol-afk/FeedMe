@@ -269,4 +269,51 @@
   .animate-fade-up {
     animation: fadeUp 0.25s ease-out;
   }
+
+  /* ─── Purposeful Motion & Reveal Choreography ─── */
+  .reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--stagger-delay, 0ms);
+    will-change: opacity, transform;
+  }
+
+  .reveal-on-scroll.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .xp-float-anim {
+    animation: xpFloat 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .gps-route-anim {
+    stroke-dasharray: 600;
+    stroke-dashoffset: 600;
+    animation: gpsDash 2.4s cubic-bezier(0.16, 1, 0.3, 1) forwards infinite;
+  }
+}
+
+@keyframes gpsDash {
+  0% { stroke-dashoffset: 600; }
+  75%, 100% { stroke-dashoffset: 0; }
+}
+
+@keyframes xpFloat {
+  0% { transform: translateY(0) scale(0.9); opacity: 1; }
+  100% { transform: translateY(-24px) scale(1.1); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-on-scroll {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .xp-float-anim,
+  .gps-route-anim {
+    animation: none !important;
+    stroke-dashoffset: 0 !important;
+  }
 }

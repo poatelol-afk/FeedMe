@@ -2,6 +2,7 @@
 
 import React from 'react';
 import PhoneMockup from './PhoneMockup';
+import { ScrollReveal } from './ui/ScrollReveal';
 
 export default function HeroSection() {
   return (
@@ -12,7 +13,7 @@ export default function HeroSection() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
           {/* Left Column: Value Proposition & Tactile CTAs */}
-          <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
+          <ScrollReveal className="lg:col-span-7 space-y-6 text-center lg:text-left">
             {/* Direct Headline (No eyebrow kicker, solid high-contrast lettering) */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.15]">
               เปลี่ยนการคุมอาหารและออกกำลังกาย{' '}
@@ -21,11 +22,10 @@ export default function HeroSection() {
               </span>
             </h1>
 
-            {/* High-energy Subtitle */}
+            {/* High-energy Distilled Subtitle */}
             <p className="text-base sm:text-lg text-slate-300 font-medium max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-              รวมความสนุกของ <span className="text-[#58CC02] font-bold">Duolingo</span> (รักษาสถิติ Streak & ลีกรายสัปดาห์) +{' '}
-              <span className="text-[#FF9600] font-bold">Strava</span> (วิ่ง GPS & เวทเทรนนิ่ง Progressive Overload) +{' '}
-              <span className="text-[#1CB0F6] font-bold">Smart Kitchen & ตาชั่ง BLE</span> คำนวณสมดุลแคลอรีสุทธิ (Net Calories) ให้เห็นแบบเรียลไทม์
+              ผสานลีก <span className="text-[#58CC02] font-bold">Duolingo</span> + วิ่งและเวทสไตล์{' '}
+              <span className="text-[#FF9600] font-bold">Strava</span> + ตาชั่งครัว IoT คำนวณ Net Calories เรียลไทม์แบบไม่กดดัน
             </p>
 
             {/* 3D Tactile Buttons (Layered shadow with physical active translation, no border radius clash) */}
@@ -33,7 +33,7 @@ export default function HeroSection() {
               {/* Android APK Download 3D Button */}
               <a
                 href="#download"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-[#58CC02] hover:bg-[#4EBA02] text-white font-black text-base tracking-wide shadow-[0_4px_0_#3D8F00] hover:shadow-[0_4px_0_#3D8F00] active:shadow-none active:translate-y-1 transition-all cursor-pointer"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-[#58CC02] hover:bg-[#4EBA02] text-white font-black text-base tracking-wide shadow-[0_4px_0_#3D8F00] active:shadow-none active:translate-y-1 transition-all cursor-pointer"
               >
                 <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
                   <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-1.0002 0-.5515.4482-1.0001.9993-1.0001.5516 0 .9997.4486.9997 1.0001 0 .5516-.4481 1.0002-.9997 1.0002m-11.046 0c-.5511 0-.9993-.4486-.9993-1.0002 0-.5515.4482-1.0001.9993-1.0001.5516 0 .9997.4486.9997 1.0001 0 .5516-.4481 1.0002-.9997 1.0002m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.411 13.856 8.125 12 8.125c-1.8561 0-3.5902.286-5.1368.8247L4.8409 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.7774h24c-.3432-4.1185-2.6889-7.5907-6.1185-9.456" />
@@ -68,24 +68,30 @@ export default function HeroSection() {
                 <div className="text-xs text-slate-400">เล่นได้ทันทีไม่ต้องมีคีย์</div>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* Right Column: 3D Interactive Phone Preview */}
-          <div className="lg:col-span-5 relative flex justify-center">
+          <ScrollReveal staggerDelayMs={150} className="lg:col-span-5 relative flex justify-center">
             {/* Floating Tactile Badges around Phone */}
-            <div className="hidden sm:flex absolute -left-6 top-16 z-30 items-center gap-2 px-3 py-2 rounded-2xl bg-[#1E293B] border border-[#58CC02]/40 shadow-xl text-white text-xs font-black transition-transform duration-300 hover:scale-105">
+            <a
+              href="#demo"
+              className="hidden sm:flex absolute -left-6 top-16 z-30 items-center gap-2 px-3.5 py-2 rounded-2xl bg-[#1E293B] border border-[#58CC02]/40 shadow-xl text-white text-xs font-black transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            >
               <span className="text-base">⚡</span>
               <span>+120 XP Net Calorie Met!</span>
-            </div>
+            </a>
 
-            <div className="hidden sm:flex absolute -right-6 bottom-24 z-30 items-center gap-2 px-3 py-2 rounded-2xl bg-[#1E293B] border border-[#1CB0F6]/40 shadow-xl text-white text-xs font-black transition-transform duration-300 hover:scale-105">
+            <a
+              href="#features"
+              className="hidden sm:flex absolute -right-6 bottom-24 z-30 items-center gap-2 px-3.5 py-2 rounded-2xl bg-[#1E293B] border border-[#1CB0F6]/40 shadow-xl text-white text-xs font-black transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            >
               <span className="text-base">⚖️</span>
               <span>ตาชั่ง BLE เชื่อมต่ออัตโนมัติ</span>
-            </div>
+            </a>
 
             {/* Phone Screen Component */}
             <PhoneMockup />
-          </div>
+          </ScrollReveal>
         </div>
       </div>
     </section>

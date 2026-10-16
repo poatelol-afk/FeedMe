@@ -1,28 +1,29 @@
 'use client';
 
 import React from 'react';
+import { ScrollReveal } from './ui/ScrollReveal';
 
 export default function PillarsBento() {
   return (
     <section id="features" className="py-20 bg-[#0B1317] border-y border-white/5 relative">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Heading (No eyebrow kicker, solid high-contrast lettering) */}
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+        {/* Section Heading (Distilled & High-contrast) */}
+        <ScrollReveal className="text-center max-w-3xl mx-auto mb-16 space-y-3">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
-            3 เสาหลักที่จะเปลี่ยนการดูแลตัวเอง <br className="hidden sm:block" />
-            <span className="text-[#58CC02]">
-              จากภาระน่าเบื่อ สู่เกมที่หยุดเล่นไม่ได้
-            </span>
+            3 ระบบหลัก เปลี่ยนวินัยให้เป็นเกม
           </h2>
-          <p className="text-slate-300 text-sm sm:text-base">
-            หมดยุคการจดแคลลงตาราง Excel หรือออกกำลังกายอย่างโดดเดี่ยว นี่คืออีโคซิสเต็มที่ออกแบบมาเพื่อผลลัพธ์จริงและความสนุกทุกวัน
+          <p className="text-slate-300 text-sm sm:text-base font-medium">
+            ถ่ายรูป ชั่งตวง วิ่ง และไต่ลีก จบในอีโคซิสเต็มเดียว
           </p>
-        </div>
+        </ScrollReveal>
 
         {/* Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           {/* PILLAR 1: SMART KITCHEN & BLE SCALE */}
-          <div className="md:col-span-12 lg:col-span-7 rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-[#162329] to-[#0F171B] border-2 border-[#233842] hover:border-[#1CB0F6]/50 transition-all shadow-xl space-y-6">
+          <ScrollReveal
+            staggerDelayMs={100}
+            className="md:col-span-12 lg:col-span-7 rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-[#162329] to-[#0F171B] border-2 border-[#233842] hover:border-[#1CB0F6]/50 transition-all shadow-xl space-y-6"
+          >
             <div className="flex items-center justify-between">
               <span className="text-xs font-black px-3 py-1 rounded-full bg-[#1CB0F6]/20 text-[#1CB0F6] border border-[#1CB0F6]/40 uppercase tracking-wide">
                 Smart Kitchen & BLE Scale
@@ -35,40 +36,43 @@ export default function PillarsBento() {
                 ครัวอัจฉริยะ & ตาชั่งดิจิทัล IoT
               </h3>
               <p className="text-sm text-slate-300 leading-relaxed">
-                ไม่ว่าจะกินข้าวนอกบ้านหรือเข้าครัวปรุงเอง ทุกอย่างง่ายในปลายนิ้ว พร้อมคำนวณสารอาหารลึกระดับกรัม
+                รู้แคลทันทีตั้งแต่ถ่ายรูปจานโปรด ไปจนถึงชั่งวัตถุดิบสดผ่านบลูทูธ
               </p>
             </div>
 
             {/* Feature Highlights Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-              <div className="rounded-2xl p-4 bg-[#101A1F] border border-white/5 space-y-1.5">
+              <div className="rounded-2xl p-4 bg-[#101A1F] border border-white/5 space-y-1.5 hover:border-white/20 transition-all">
                 <div className="text-lg">📸</div>
                 <div className="text-sm font-black text-white">Photo AI Scanner</div>
                 <p className="text-xs text-slate-400">
-                  ถ่ายรูปอาหารจานโปรด ระบบแยกแยะเมนูและคำนวณแคล+โปรตีนให้ทันที
+                  ถ่ายปุ๊บ รู้แคลและโปรตีนทันที
                 </p>
               </div>
 
-              <div className="rounded-2xl p-4 bg-[#101A1F] border border-white/5 space-y-1.5">
+              <div className="rounded-2xl p-4 bg-[#101A1F] border border-white/5 space-y-1.5 hover:border-white/20 transition-all">
                 <div className="text-lg">👨‍🍳</div>
                 <div className="text-sm font-black text-white">Recipe Chef</div>
                 <p className="text-xs text-slate-400">
-                  &quot;วันนี้กินอะไรดี?&quot; แนะนำเมนูตามวัตถุดิบและโควต้าแคลที่ยังเหลือ
+                  คิดเมนูจากของที่มี ตามโควต้าแคลที่เหลือ
                 </p>
               </div>
 
-              <div className="rounded-2xl p-4 bg-[#101A1F] border border-white/5 space-y-1.5">
+              <div className="rounded-2xl p-4 bg-[#101A1F] border border-white/5 space-y-1.5 hover:border-white/20 transition-all">
                 <div className="text-lg">⚖️</div>
                 <div className="text-sm font-black text-white">ESP32 BLE Scale</div>
                 <p className="text-xs text-slate-400">
-                  เชื่อมตาชั่งบลูทูธ ชั่งลงชามรู้สารอาหารสดๆ (มีโหมดจำลองในแอป)
+                  ชั่งลงชาม ซิงก์กรัมและมาโครเรียลไทม์
                 </p>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* PILLAR 2: RUN & LIFT */}
-          <div className="md:col-span-12 lg:col-span-5 rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-[#1E2529] to-[#12181C] border-2 border-[#2F3D45] hover:border-[#FF9600]/50 transition-all shadow-xl space-y-6">
+          <ScrollReveal
+            staggerDelayMs={200}
+            className="md:col-span-12 lg:col-span-5 rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-[#1E2529] to-[#12181C] border-2 border-[#2F3D45] hover:border-[#FF9600]/50 transition-all shadow-xl space-y-6"
+          >
             <div className="flex items-center justify-between">
               <span className="text-xs font-black px-3 py-1 rounded-full bg-[#FF9600]/20 text-[#FF9600] border border-[#FF9600]/40 uppercase tracking-wide">
                 Run & Lift
@@ -81,35 +85,38 @@ export default function PillarsBento() {
                 Strava-grade Cardio & เวทเทรนนิ่ง
               </h3>
               <p className="text-sm text-slate-300 leading-relaxed">
-                พลังสองสายที่ทำงานร่วมกัน: วิ่งจับ GPS เส้นทางจริง และตารางยกเวทพร้อมระบบคุมน้ำหนัก
+                จับเส้นทางวิ่ง GPS และบันทึกตารางเวท หักลบแคลเผาผลาญอัตโนมัติ
               </p>
             </div>
 
             <div className="space-y-3 pt-2">
-              <div className="p-3.5 rounded-2xl bg-[#121A1F] border border-white/5 flex items-start gap-3">
+              <div className="p-3.5 rounded-2xl bg-[#121A1F] border border-white/5 flex items-start gap-3 hover:border-white/20 transition-all">
                 <div className="text-xl mt-0.5">🗺️</div>
                 <div>
                   <div className="text-sm font-black text-white">วิ่งกลางแจ้งพร้อม GPS Map</div>
                   <div className="text-xs text-slate-400 mt-0.5">
-                    วัดระยะทาง, Pace, เวลาจริง และแปลงพลังงานเผาผลาญเข้า Net Calories
+                    วัด Pace ระยะทาง และหักลบ Net Calories ทันที
                   </div>
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-[#121A1F] border border-white/5 flex items-start gap-3">
+              <div className="p-3.5 rounded-2xl bg-[#121A1F] border border-white/5 flex items-start gap-3 hover:border-white/20 transition-all">
                 <div className="text-xl mt-0.5">⚡</div>
                 <div>
                   <div className="text-sm font-black text-white">Progressive Overload Coach</div>
                   <div className="text-xs text-slate-400 mt-0.5">
-                    เช็คและแจ้งเตือนเมื่อคุณยกได้หนักขึ้น พร้อมแจกเหรียญรางวัลพิเศษ
+                    แจ้งเตือนสถิติใหม่เมื่อยกหนักขึ้น พร้อมโบนัส XP
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* PILLAR 3: DUOLINGO-STYLE LEAGUES & PARTY QUESTS */}
-          <div className="md:col-span-12 rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-[#1B271F] via-[#142018] to-[#0E1712] border-2 border-[#25422D] hover:border-[#58CC02]/50 transition-all shadow-xl">
+          <ScrollReveal
+            staggerDelayMs={300}
+            className="md:col-span-12 rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-[#1B271F] via-[#142018] to-[#0E1712] border-2 border-[#25422D] hover:border-[#58CC02]/50 transition-all shadow-xl"
+          >
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
               <div className="lg:col-span-7 space-y-4">
                 <div className="flex items-center gap-2">
@@ -124,8 +131,7 @@ export default function PillarsBento() {
                 </h3>
 
                 <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-                  เปลี่ยนวินัยให้เป็นการผจญภัย: ทุกมื้ออาหารที่คุมได้ ทุกกิโลเมตรที่วิ่ง ทุกเซ็ตที่ยก จะกลายเป็น XP ไต่ลีกจาก Bronze ไปสู่ Diamond
-                  พร้อมระบบชวนเพื่อนตั้งตี้สู้ <span className="text-[#CE82FF] font-bold">&quot;บอสหมูกระทะ&quot;</span> รวมพลังเผาผลาญ 10,000 kcal ร่วมกัน
+                  ทุกมื้อและทุกเซ็ตคือ XP ไต่ลีกสู่ Diamond หรือตั้งตี้ตี <span className="text-[#CE82FF] font-bold">&quot;บอสหมูกระทะ&quot;</span> 10,000 kcal ร่วมกับเพื่อน
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
@@ -178,7 +184,7 @@ export default function PillarsBento() {
                 </div>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
       </div>
     </section>

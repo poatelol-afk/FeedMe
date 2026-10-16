@@ -1,15 +1,38 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import HeroSection from '@/components/HeroSection';
 import PillarsBento from '@/components/PillarsBento';
 import InteractiveDemo from '@/components/InteractiveDemo';
+import { ScrollReveal } from '@/components/ui/ScrollReveal';
 
 export default function LandingPage() {
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalScroll > 0) {
+        setScrollProgress((window.scrollY / totalScroll) * 100);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#0F172A] text-white flex flex-col font-sans selection:bg-[#58CC02]/30 selection:text-white">
-      {/* ─── Sticky Promotional Navbar ─── */}
-      <header className="sticky top-0 z-50 bg-[#0F172A]/85 backdrop-blur-md border-b border-white/10">
+      {/* ─── Sticky Promotional Navbar with Scroll Progress HUD ─── */}
+      <header className="sticky top-0 z-50 bg-[#0F172A]/90 backdrop-blur-md border-b border-white/10">
+        {/* Scroll Progress Bar */}
+        <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-transparent overflow-hidden">
+          <div
+            className="h-full bg-[#58CC02] transition-all duration-100 ease-out"
+            style={{ width: `${scrollProgress}%` }}
+          />
+        </div>
+
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Logo & Tag */}
           <div className="flex items-center gap-3">
@@ -28,16 +51,16 @@ export default function LandingPage() {
 
           {/* Nav Links */}
           <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-300">
-            <a href="#features" className="hover:text-white transition-colors">
+            <a href="#features" className="hover:text-[#58CC02] transition-colors">
               3 เสาหลัก
             </a>
-            <a href="#demo" className="hover:text-white transition-colors">
-              ทดลองคำนวณ Net Calories & XP
+            <a href="#demo" className="hover:text-[#58CC02] transition-colors">
+              ทดลองคำนวณ
             </a>
-            <a href="#compare" className="hover:text-white transition-colors">
+            <a href="#compare" className="hover:text-[#58CC02] transition-colors">
               เปรียบเทียบ
             </a>
-            <a href="#download" className="hover:text-white transition-colors">
+            <a href="#download" className="hover:text-[#58CC02] transition-colors">
               ดาวน์โหลด APK
             </a>
           </nav>
@@ -70,19 +93,16 @@ export default function LandingPage() {
         {/* ─── Comparison Section ─── */}
         <section id="compare" className="py-20 bg-[#0B1317] border-t border-white/5">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1A282F] border border-[#CE82FF]/30 text-xs font-black uppercase tracking-wider text-[#CE82FF]">
-                ⚡ THE NEW WAY TO STAY FIT
-              </div>
+            <ScrollReveal className="text-center max-w-2xl mx-auto mb-12 space-y-3">
               <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-                ทำไมต้อง FeedMe 2.0?
+                ทำไมต้อง <span className="text-[#58CC02]">FeedMe 2.0</span>?
               </h2>
-              <p className="text-slate-400 text-sm">
-                ลืมแอปบันทึกแคลแบบเดิมๆ ที่น่าเบื่อและเต็มไปด้วยตัวเลขเครียดๆ ไปได้เลย
+              <p className="text-slate-300 text-sm">
+                ลืมแอปนับแคลที่กดดันและเต็มไปด้วยตัวเลขเครียดๆ ไปได้เลย
               </p>
-            </div>
+            </ScrollReveal>
 
-            <div className="rounded-3xl overflow-hidden border-2 border-[#23353D] bg-[#121E24]">
+            <ScrollReveal staggerDelayMs={150} className="rounded-3xl overflow-hidden border-2 border-[#23353D] bg-[#121E24] shadow-2xl">
               <div className="grid grid-cols-1 md:grid-cols-2">
                 {/* Old Apps */}
                 <div className="p-6 sm:p-8 border-b md:border-b-0 md:border-r border-[#23353D] bg-[#0E171C] space-y-4">
@@ -144,28 +164,25 @@ export default function LandingPage() {
                   </ul>
                 </div>
               </div>
-            </div>
+            </ScrollReveal>
           </div>
         </section>
 
         {/* ─── Download CTA Section ─── */}
         <section id="download" className="py-20 bg-gradient-to-b from-[#0F172A] to-[#070D18] relative">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1A282F] border border-[#58CC02]/30 text-xs font-black uppercase tracking-wider text-[#58CC02]">
-              🚀 READY TO PLAY
-            </div>
-
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
-              พร้อมเปลี่ยนการคุมอาหาร <br />
-              ให้เป็นเกมที่คุณรักแล้วหรือยัง?
-            </h2>
-
-            <p className="text-slate-300 text-sm sm:text-base max-w-xl mx-auto">
-              ดาวน์โหลด FeedMe 2.0 สำหรับ Android ได้ทันทีในรูปแบบไฟล์ APK ติดตั้งง่าย ปลอดภัย และเริ่มผจญภัยสู่รูปร่างที่ดีที่สุดได้เลยวันนี้
-            </p>
+            <ScrollReveal className="space-y-4">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
+                พร้อมเปลี่ยนการดูแลสุขภาพ <br />
+                ให้เป็นเกมที่คุณรักแล้วหรือยัง?
+              </h2>
+              <p className="text-slate-300 text-sm sm:text-base max-w-xl mx-auto">
+                ดาวน์โหลด FeedMe 2.0 สำหรับ Android ได้ทันทีในรูปแบบไฟล์ APK ติดตั้งง่าย ปลอดภัย และเริ่มเล่นได้เลย
+              </p>
+            </ScrollReveal>
 
             {/* Tactile Big Download Card */}
-            <div className="p-6 sm:p-8 rounded-3xl bg-[#14232B] border-2 border-[#58CC02]/50 max-w-lg mx-auto shadow-2xl space-y-5">
+            <ScrollReveal staggerDelayMs={150} className="p-6 sm:p-8 rounded-3xl bg-[#14232B] border-2 border-[#58CC02]/50 max-w-lg mx-auto shadow-2xl space-y-5">
               <div className="flex items-center justify-between text-xs text-slate-300 font-bold border-b border-white/10 pb-3">
                 <span className="flex items-center gap-1.5 text-white">
                   <span>📱</span> FeedMe Mobile Client
@@ -184,23 +201,28 @@ export default function LandingPage() {
                 <span>ดาวน์โหลดสำหรับ Android (APK)</span>
               </a>
 
-              {/* Install instructions */}
-              <div className="text-left text-xs text-slate-400 space-y-1 pt-2">
-                <div className="font-bold text-slate-300">วิธีติดตั้งง่ายๆ 3 ขั้นตอน:</div>
-                <div className="flex gap-2">
-                  <span className="font-bold text-[#58CC02]">1.</span>
-                  <span>แตะปุ่มดาวน์โหลดไฟล์ APK ลงในโทรศัพท์ Android</span>
+              {/* 3-Step Horizontal Pills */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-xs">
+                <div className="p-2.5 rounded-xl bg-[#0D181F] border border-white/5 flex items-center gap-2 text-slate-300">
+                  <span className="w-5 h-5 rounded-full bg-[#58CC02]/20 text-[#58CC02] flex items-center justify-center font-black text-[10px]">
+                    1
+                  </span>
+                  <span>ดาวน์โหลด APK</span>
                 </div>
-                <div className="flex gap-2">
-                  <span className="font-bold text-[#58CC02]">2.</span>
-                  <span>เปิดไฟล์ที่ดาวน์โหลดมา แล้วเลือก &apos;ติดตั้ง (Install)&apos;</span>
+                <div className="p-2.5 rounded-xl bg-[#0D181F] border border-white/5 flex items-center gap-2 text-slate-300">
+                  <span className="w-5 h-5 rounded-full bg-[#58CC02]/20 text-[#58CC02] flex items-center justify-center font-black text-[10px]">
+                    2
+                  </span>
+                  <span>กดติดตั้งบนเครื่อง</span>
                 </div>
-                <div className="flex gap-2">
-                  <span className="font-bold text-[#58CC02]">3.</span>
-                  <span>เปิดแอป FeedMe 2.0 และเริ่มเล่นเกมฟิตเนสได้ทันที!</span>
+                <div className="p-2.5 rounded-xl bg-[#0D181F] border border-white/5 flex items-center gap-2 text-slate-300">
+                  <span className="w-5 h-5 rounded-full bg-[#58CC02]/20 text-[#58CC02] flex items-center justify-center font-black text-[10px]">
+                    3
+                  </span>
+                  <span>เริ่มเล่นได้ทันที</span>
                 </div>
               </div>
-            </div>
+            </ScrollReveal>
 
             {/* iOS Coming Soon notice */}
             <div className="inline-flex items-center gap-2 text-xs text-slate-400">

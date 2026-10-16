@@ -1,8 +1,21 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 type TabKey = 'home' | 'kitchen' | 'workout' | 'league';
+
+interface QuestItem {
+  id: string;
+  text: string;
+  xp: number;
+  completed: boolean;
+}
+
+const AI_DISH_PRESETS = [
+  { name: 'ข้าวมันไก่ต้มอกไก่ ไม่เอาหนัง', kcal: 520, p: 38, c: 64, f: 12, emoji: '🍛' },
+  { name: 'สเต็กแซลมอนย่างซีอิ๊ว ควินัว', kcal: 460, p: 42, c: 32, f: 16, emoji: '🐟' },
+  { name: 'สลัดอกไก่ฉีก ไข่ต้มออนเซ็น', kcal: 340, p: 36, c: 18, f: 10, emoji: '🥗' },
+];
 
 export default function PhoneMockup() {
   const [activeTab, setActiveTab] = useState<TabKey>('home');
@@ -10,9 +23,73 @@ export default function PhoneMockup() {
   const [workoutMode, setWorkoutMode] = useState<'run' | 'lift'>('run');
   const [scaleWeight, setScaleWeight] = useState(185);
   const [partyJoined, setPartyJoined] = useState(false);
+  const [dishIndex, setDishIndex] = useState(0);
+
+  // Gamification state inside phone
+  const [userXp, setUserXp] = useState(1280);
+  const [floatingXp, setFloatingXp] = useState<string | null>(null);
+  const [quests, setQuests] = useState<QuestItem[]>([
+    { id: 'q1', text: 'ถ่ายรูปมื้อเช้าด้วย AI', xp: 20, completed: true },
+    { id: 'q2', text: 'วิ่ง GPS โซน 2 สะสม 5 กม.', xp: 80, completed: true },
+    { id: 'q3', text: 'ยกเวทตาราง Push Day', xp: 100, completed: false },
+  ]);
+
+  // 3D Perspective Tilt state
+  const phoneRef = useRef<HTMLDivElement>(null);
+  const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!phoneRef.current) return;
+    const rect = phoneRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const rx = ((y / rect.height) - 0.5) * -10;
+    const ry = ((x / rect.width) - 0.5) * 10;
+    setTilt({ rx, ry });
+  };
+
+  const handleMouseLeave = () => {
+    setTilt({ rx: 0, ry: 0 });
+  };
+
+  const toggleQuest = (id: string) => {
+    setQuests(prev =>
+      prev.map(q => {
+        if (q.id === id) {
+          const nextState = !q.completed;
+          const delta = nextState ? q.xp : -q.xp;
+          setUserXp(curr => curr + delta);
+          if (nextState) {
+            setFloatingXp(`+${q.xp} XP!`);
+            setTimeout(() => setFloatingXp(null), 800);
+          }
+          return { ...q, completed: nextState };
+        }
+        return q;
+      })
+    );
+  };
+
+  const currentDish = AI_DISH_PRESETS[dishIndex];
 
   return (
-    <div className="relative mx-auto w-full max-w-[340px] sm:max-w-[370px]">
+    <div
+      ref={phoneRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        transform: `perspective(1000px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
+        transition: tilt.rx === 0 && tilt.ry === 0 ? 'transform 0.4s ease-out' : 'none',
+      }}
+      className="relative mx-auto w-full max-w-[340px] sm:max-w-[370px] select-none will-change-transform"
+    >
+      {/* Floating XP Pop Notification */}
+      {floatingXp && (
+        <div className="absolute top-12 right-6 z-40 xp-float-anim bg-[#58CC02] text-white px-3 py-1 rounded-full text-xs font-black shadow-lg pointer-events-none">
+          ⚡ {floatingXp}
+        </div>
+      )}
+
       {/* Outer Phone Shell with 3D Depth */}
       <div className="relative rounded-[48px] p-3 bg-gradient-to-b from-[#334155] via-[#1E293B] to-[#0F172A] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.12)]">
         {/* Dynamic Island / Speaker Notch */}
@@ -29,7 +106,9 @@ export default function PhoneMockup() {
             <div className="flex items-center gap-2 text-[11px]">
               <span className="text-[#FF9600] flex items-center gap-0.5">🔥 12</span>
               <span className="text-[#1CB0F6] flex items-center gap-0.5">💎 450</span>
-              <span className="text-[#58CC02] flex items-center gap-0.5">⚡ 1,280</span>
+              <span className="text-[#58CC02] flex items-center gap-0.5 font-extrabold">
+                ⚡ {userXp.toLocaleString()}
+              </span>
             </div>
           </div>
 
@@ -39,7 +118,7 @@ export default function PhoneMockup() {
             {activeTab === 'home' && (
               <div className="space-y-3 animate-fade-in">
                 {/* Hero Net Calorie Card */}
-                <div className="rounded-2xl p-4 bg-gradient-to-br from-[#1E293B] to-[#0F172A] border-2 border-[#334155] shadow-lg">
+                <div className="rounded-2xl p-4 bg-[#1E293B] border border-[#334155] shadow-lg">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs font-black uppercase tracking-wider text-[#58CC02]">
                       ⚖️ สมดุลพลังงาน (Net Calories)
@@ -67,7 +146,7 @@ export default function PhoneMockup() {
                         <span>112 / 140 g (80%)</span>
                       </div>
                       <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                        <div className="h-full bg-[#38BDF8] rounded-full w-[80%]" />
+                        <div className="h-full bg-[#38BDF8] rounded-full w-[80%] transition-all duration-500" />
                       </div>
                     </div>
                     <div>
@@ -76,7 +155,7 @@ export default function PhoneMockup() {
                         <span>145 / 220 g (66%)</span>
                       </div>
                       <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                        <div className="h-full bg-[#58CC02] rounded-full w-[66%]" />
+                        <div className="h-full bg-[#58CC02] rounded-full w-[66%] transition-all duration-500" />
                       </div>
                     </div>
                     <div>
@@ -85,42 +164,48 @@ export default function PhoneMockup() {
                         <span>38 / 60 g (63%)</span>
                       </div>
                       <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                        <div className="h-full bg-[#F59E0B] rounded-full w-[63%]" />
+                        <div className="h-full bg-[#F59E0B] rounded-full w-[63%] transition-all duration-500" />
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Daily Quests Card */}
-                <div className="rounded-2xl p-3.5 bg-[#1A282F] border-2 border-[#2A3E47]">
+                {/* Daily Quests Card (Interactive Click-to-Check!) */}
+                <div className="rounded-2xl p-3.5 bg-[#1A282F] border border-[#2A3E47]">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-black text-white flex items-center gap-1.5">
-                      <span>🎯 เควสประจำวัน</span>
+                      <span>🎯 เควสประจำวัน (แตะเพื่อทำภารกิจ)</span>
                     </span>
-                    <span className="text-[10px] text-[#FFC800] font-bold">2/3 สำเร็จ</span>
+                    <span className="text-[10px] text-[#FFC800] font-bold">
+                      {quests.filter(q => q.completed).length}/{quests.length} สำเร็จ
+                    </span>
                   </div>
                   <div className="space-y-2 text-xs">
-                    <div className="flex items-center justify-between p-2 rounded-xl bg-[#131F24] border border-[#58CC02]/40">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[#58CC02] font-black">✓</span>
-                        <span className="line-through text-slate-400">ถ่ายรูปมื้อเช้าด้วย AI</span>
-                      </div>
-                      <span className="text-[10px] font-bold text-[#FFC800]">+20 XP</span>
-                    </div>
-                    <div className="flex items-center justify-between p-2 rounded-xl bg-[#131F24] border border-[#58CC02]/40">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[#58CC02] font-black">✓</span>
-                        <span className="line-through text-slate-400">วิ่ง GPS โซน 2 สะสม 5 กม.</span>
-                      </div>
-                      <span className="text-[10px] font-bold text-[#FFC800]">+80 XP</span>
-                    </div>
-                    <div className="flex items-center justify-between p-2 rounded-xl bg-[#131F24] border border-white/10">
-                      <div className="flex items-center gap-2">
-                        <span className="text-slate-500 font-black">○</span>
-                        <span>ยกเวทตาราง Push Day</span>
-                      </div>
-                      <span className="text-[10px] font-bold text-[#FFC800]">+100 XP</span>
-                    </div>
+                    {quests.map(q => (
+                      <button
+                        key={q.id}
+                        onClick={() => toggleQuest(q.id)}
+                        className={`w-full flex items-center justify-between p-2 rounded-xl transition-all text-left ${
+                          q.completed
+                            ? 'bg-[#131F24] border border-[#58CC02]/40 text-slate-400'
+                            : 'bg-[#1E293B] border border-white/10 text-white hover:border-[#58CC02]/60'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-black ${
+                              q.completed ? 'bg-[#58CC02] text-white' : 'border border-slate-500 text-transparent'
+                            }`}
+                          >
+                            ✓
+                          </span>
+                          <span className={q.completed ? 'line-through text-slate-400' : 'font-bold'}>
+                            {q.text}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-bold text-[#FFC800]">+{q.xp} XP</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -158,29 +243,41 @@ export default function PhoneMockup() {
                 </div>
 
                 {kitchenMode === 'ai' && (
-                  <div className="rounded-2xl p-4 bg-[#1A282F] border-2 border-[#2A3E47] space-y-3 text-center">
-                    <div className="relative h-32 rounded-xl overflow-hidden bg-slate-900 border border-white/10 flex items-center justify-center">
-                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#58CC02]/20 to-transparent animate-pulse" />
-                      <div className="text-4xl">🍛</div>
-                      <div className="absolute bottom-2 left-2 text-[10px] bg-black/60 px-2 py-0.5 rounded text-[#58CC02] font-bold">
-                        AI Scanning... 98%
+                  <div className="rounded-2xl p-4 bg-[#1A282F] border border-[#2A3E47] space-y-3 text-center">
+                    <div className="relative h-32 rounded-xl overflow-hidden bg-slate-900 border border-white/10 flex items-center justify-center group">
+                      {/* Laser scanning beam */}
+                      <div
+                        className="absolute inset-x-0 h-1 bg-[#58CC02] shadow-[0_0_12px_#58CC02] opacity-80"
+                        style={{
+                          animation: 'feedme-laser 2s ease-in-out infinite',
+                        }}
+                      />
+                      <div className="text-4xl">{currentDish.emoji}</div>
+                      <div className="absolute bottom-2 left-2 text-[10px] bg-black/70 px-2 py-0.5 rounded text-[#58CC02] font-bold">
+                        AI Scanning... 99%
                       </div>
+                      <button
+                        onClick={() => setDishIndex((dishIndex + 1) % AI_DISH_PRESETS.length)}
+                        className="absolute top-2 right-2 text-[10px] bg-white/10 hover:bg-white/20 px-2 py-0.5 rounded text-white font-bold transition-all"
+                      >
+                        สลับจาน 🔄
+                      </button>
                     </div>
                     <div className="text-left">
-                      <div className="text-sm font-black text-white">ข้าวมันไก่ต้มอกไก่ ไม่เอาหนัง</div>
-                      <div className="text-xs text-slate-400">ประมาณการ: 520 kcal</div>
+                      <div className="text-sm font-black text-white">{currentDish.name}</div>
+                      <div className="text-xs text-slate-400">ประมาณการ: {currentDish.kcal} kcal</div>
                       <div className="grid grid-cols-3 gap-1.5 mt-2 text-center text-[10px]">
                         <div className="p-1 rounded bg-[#131F24] border border-white/5">
                           <span className="block text-slate-400">โปรตีน</span>
-                          <span className="font-bold text-[#38BDF8]">38g</span>
+                          <span className="font-bold text-[#38BDF8]">{currentDish.p}g</span>
                         </div>
                         <div className="p-1 rounded bg-[#131F24] border border-white/5">
                           <span className="block text-slate-400">คาร์บ</span>
-                          <span className="font-bold text-[#58CC02]">64g</span>
+                          <span className="font-bold text-[#58CC02]">{currentDish.c}g</span>
                         </div>
                         <div className="p-1 rounded bg-[#131F24] border border-white/5">
                           <span className="block text-slate-400">ไขมัน</span>
-                          <span className="font-bold text-[#F59E0B]">12g</span>
+                          <span className="font-bold text-[#F59E0B]">{currentDish.f}g</span>
                         </div>
                       </div>
                     </div>
@@ -188,7 +285,7 @@ export default function PhoneMockup() {
                 )}
 
                 {kitchenMode === 'chef' && (
-                  <div className="rounded-2xl p-3.5 bg-[#1A282F] border-2 border-[#CE82FF]/40 space-y-2.5">
+                  <div className="rounded-2xl p-3.5 bg-[#1A282F] border border-[#CE82FF]/40 space-y-2.5">
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-black text-[#CE82FF]">👨‍🍳 AI Recipe Chef</span>
                       <span className="text-[10px] bg-[#CE82FF]/20 text-purple-300 px-2 py-0.5 rounded-full font-bold">
@@ -220,7 +317,7 @@ export default function PhoneMockup() {
                     </div>
                     <button
                       onClick={() => setKitchenMode('scale')}
-                      className="w-full py-1.5 rounded-lg bg-[#CE82FF] text-white text-[11px] font-bold shadow hover:brightness-110 active:scale-98"
+                      className="w-full py-1.5 rounded-lg bg-[#CE82FF] text-white text-[11px] font-bold shadow-[0_2px_0_#9333EA] hover:brightness-110 active:shadow-none active:translate-y-0.5"
                     >
                       เลือกเมนูนี้แล้วปรุงด้วยตาชั่ง ⚖️
                     </button>
@@ -228,7 +325,7 @@ export default function PhoneMockup() {
                 )}
 
                 {kitchenMode === 'scale' && (
-                  <div className="rounded-2xl p-4 bg-[#1A282F] border-2 border-[#2A3E47] space-y-3">
+                  <div className="rounded-2xl p-4 bg-[#1A282F] border border-[#2A3E47] space-y-3">
                     <div className="flex items-center justify-between text-[11px] text-[#1CB0F6] font-bold">
                       <span>⚡ BLE Connected: FeedMe Scale</span>
                       <span className="w-2 h-2 rounded-full bg-[#1CB0F6] animate-ping" />
@@ -243,13 +340,13 @@ export default function PhoneMockup() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => setScaleWeight(0)}
-                        className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-slate-800 text-slate-300 border border-white/10 active:scale-95"
+                        className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-slate-800 text-slate-300 border border-white/10 active:scale-95 transition-all"
                       >
                         TARE (เซ็ต 0)
                       </button>
                       <button
                         onClick={() => setScaleWeight(prev => prev + 50)}
-                        className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-[#1CB0F6] text-white shadow-[0_2px_0_#0284C7] active:shadow-none active:translate-y-0.5"
+                        className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-[#1CB0F6] text-white shadow-[0_2px_0_#0284C7] active:shadow-none active:translate-y-0.5 transition-all"
                       >
                         +50g อกไก่
                       </button>
@@ -265,7 +362,6 @@ export default function PhoneMockup() {
                     </div>
                   </div>
                 )}
-
               </div>
             )}
 
@@ -293,9 +389,9 @@ export default function PhoneMockup() {
                 </div>
 
                 {workoutMode === 'run' ? (
-                  <div className="rounded-2xl p-4 bg-[#1A282F] border-2 border-[#FF9600]/40 space-y-3">
+                  <div className="rounded-2xl p-4 bg-[#1A282F] border border-[#FF9600]/40 space-y-3">
                     <div className="relative h-28 rounded-xl overflow-hidden bg-slate-900 border border-white/10 flex items-center justify-center">
-                      {/* Stylized Neon GPS Map Route */}
+                      {/* Stylized Animated Neon GPS Map Route */}
                       <svg className="w-full h-full p-2" viewBox="0 0 200 100">
                         <path
                           d="M 20 80 Q 60 20, 100 60 T 180 30"
@@ -303,7 +399,7 @@ export default function PhoneMockup() {
                           stroke="#FF9600"
                           strokeWidth="4"
                           strokeLinecap="round"
-                          strokeDasharray="6 2"
+                          className="gps-route-anim"
                         />
                         <circle cx="180" cy="30" r="5" fill="#FFC800" className="animate-ping" />
                         <circle cx="180" cy="30" r="4" fill="#FFC800" />
@@ -328,7 +424,7 @@ export default function PhoneMockup() {
                     </div>
                   </div>
                 ) : (
-                  <div className="rounded-2xl p-4 bg-[#1A282F] border-2 border-[#CE82FF]/40 space-y-2.5">
+                  <div className="rounded-2xl p-4 bg-[#1A282F] border border-[#CE82FF]/40 space-y-2.5">
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-black text-white">Push Day (อก/ไหล่/หลังแขน)</span>
                       <span className="text-[10px] bg-[#CE82FF]/20 text-[#CE82FF] px-2 py-0.5 rounded-full font-bold">
@@ -354,7 +450,7 @@ export default function PhoneMockup() {
             {/* TAB 4: LEAGUE */}
             {activeTab === 'league' && (
               <div className="space-y-3 animate-fade-in">
-                <div className="rounded-2xl p-4 bg-[#1A282F] border-2 border-[#58CC02]/40 text-center space-y-2">
+                <div className="rounded-2xl p-4 bg-[#1A282F] border border-[#58CC02]/40 text-center space-y-2">
                   <div className="text-2xl">🏆</div>
                   <div className="text-sm font-black text-white">Emerald League (ลีกมรกต)</div>
                   <div className="text-[11px] text-slate-400">รีเซ็ตใน 2 วัน 14 ชั่วโมง</div>
@@ -373,7 +469,7 @@ export default function PhoneMockup() {
                         <span className="font-bold text-[#58CC02]">#2</span>
                         <span className="font-black text-white">🥈 คุณ (You)</span>
                       </div>
-                      <span className="font-black text-[#58CC02]">3,120 XP</span>
+                      <span className="font-black text-[#58CC02]">{userXp.toLocaleString()} XP</span>
                     </div>
                     <div className="flex items-center justify-between p-2 rounded-xl bg-[#131F24] border border-slate-700">
                       <div className="flex items-center gap-2">
@@ -397,6 +493,13 @@ export default function PhoneMockup() {
                     <div className="text-[10px] text-slate-300">
                       รวมพลังแก๊ง 4 คน เผาผลาญ: {partyJoined ? '8,370' : '7,850'} / 10,000 kcal
                     </div>
+                    {/* Live Boss HP Bar */}
+                    <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-[#CE82FF] to-[#EC4899] rounded-full transition-all duration-500"
+                        style={{ width: partyJoined ? '83.7%' : '78.5%' }}
+                      />
+                    </div>
                     <button
                       onClick={() => setPartyJoined(!partyJoined)}
                       className={`w-full py-1.5 rounded-lg text-[11px] font-black transition-all ${
@@ -408,7 +511,6 @@ export default function PhoneMockup() {
                       {partyJoined ? '✓ อยู่ในปาร์ตี้ (แก๊งหมูกระทะ)' : '+ ชวนเพื่อนตั้งตี้'}
                     </button>
                   </div>
-
                 </div>
               </div>
             )}
