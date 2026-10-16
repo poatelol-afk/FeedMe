@@ -1,34 +1,36 @@
-# 🤝 Contributing to FeedMe
+# 🤝 Contributing to FeedMe 2.0
 
-Thank you for contributing to the **FeedMe** ecosystem! This document outlines coding standards, branching conventions, and quality gates for maintaining this multi-platform project.
-
----
-
-## 1. Monorepo Organization
-
-- [`feedme-website`](file:///c:/Users/poate/OneDrive/เอกสาร/FeedMe/feedme-website): Next.js 16 Web Dashboard.
-- [`feedme-andriod`](file:///c:/Users/poate/OneDrive/เอกสาร/FeedMe/feedme-andriod): Expo React Native Android app.
-- [`feedme-ios`](file:///c:/Users/poate/OneDrive/เอกสาร/FeedMe/feedme-ios): Expo React Native iOS app.
-- [`Hardware`](file:///c:/Users/poate/OneDrive/เอกสาร/FeedMe/Hardware): ESP32-C3 firmware and electronics.
+Thank you for contributing to **FeedMe 2.0**! This guide covers our monorepo structure, coding conventions, and quality checks.
 
 ---
 
-## 2. Coding Guidelines & Quality Standards
+## 1. Monorepo Directory Structure
 
-### Front-End (Web & Mobile)
-- **TypeScript:** Strict mode enabled. No `any` types unless interfacing with raw untyped third-party payloads. Run `npm run typecheck` before committing.
-- **Tailwind CSS v4:** Use established semantic design tokens defined in `globals.css` (e.g., `var(--bg-base)`, `var(--accent)`, `var(--text-primary)`). Do not introduce arbitrary hardcoded hex codes.
-- **Component Design:** Keep components modular, isolated, and focused on single responsibilities.
-
-### Firmware (ESP32)
-- Follow Non-Blocking paradigms (avoid long `delay()` calls in the main loop; use `millis()` timers or RTOS tasks).
-- Preserve hardware calibration constants (`CALIBRATION_FACTOR = 460.00`).
+- [`feedme-mobile`](file:///c:/Users/poate/OneDrive/เอกสาร/FeedMe/feedme-mobile): **Flutter (Dart)** native mobile app for Android (primary focus) and iOS.
+- [`feedme-website`](file:///c:/Users/poate/OneDrive/เอกสาร/FeedMe/feedme-website): **Next.js 16 (App Router) + Tailwind CSS v4** promotional showcase website.
+- [`feedme-hardware`](file:///c:/Users/poate/OneDrive/เอกสาร/FeedMe/feedme-hardware): **ESP32-C3 + HX711** Smart Kitchen Scale firmware (C++ / Arduino / PlatformIO).
+- [`docs`](file:///c:/Users/poate/OneDrive/เอกสาร/FeedMe/docs): Design specifications (`docs/superpowers/specs/`) and implementation plans (`docs/superpowers/plans/`).
 
 ---
 
-## 3. Pre-Commit Checklist
+## 2. Coding Standards by Pillar
 
-Before pushing any commit or PR, verify:
-1. `npm run typecheck` passes with 0 errors.
-2. `npm run lint` passes cleanly.
-3. Review [`PRE_LAUNCH_CHECKLIST.md`](file:///c:/Users/poate/OneDrive/เอกสาร/FeedMe/PRE_LAUNCH_CHECKLIST.md) to ensure no regressions in responsive design, security, or error states.
+### A. Mobile App (`feedme-mobile` — Flutter / Dart)
+- **Architecture:** Feature-first modular organization (`lib/features/home`, `kitchen`, `workout`, `league`, `profile`) with shared theme and services in `lib/core/`.
+- **Design System:** Use the centralized Duolingo-inspired tactile 3D button and card components defined in `lib/core/theme/`.
+- **Static Analysis:** Always run `flutter analyze` and `flutter test` with zero errors before committing.
+
+### B. Promotional Website (`feedme-website` — Next.js / TypeScript)
+- **Scope:** Promotional landing page and interactive product showcase only (no web-app tracker routes).
+- **Quality:** Strict TypeScript (`npm run typecheck`) and responsive layout verification across mobile, tablet, and desktop.
+
+### C. Smart Scale Firmware (`feedme-hardware` — ESP32-C3)
+- Use non-blocking `millis()` timers in the main loop.
+- Maintain BLE GATT Service UUID (`4fafc201-1fb5-459e-8fcc-c5c9c331914b`) compatibility with `feedme-mobile`.
+
+---
+
+## 3. Pre-Commit Verification
+1. `cd feedme-mobile && flutter analyze && flutter test`
+2. `cd feedme-website && npm run build`
+3. Check against [`PRE_LAUNCH_CHECKLIST.md`](file:///c:/Users/poate/OneDrive/เอกสาร/FeedMe/PRE_LAUNCH_CHECKLIST.md).

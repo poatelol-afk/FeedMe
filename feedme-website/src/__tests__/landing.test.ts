@@ -55,3 +55,21 @@ test('Verification: page.tsx contains promotional showcase and 0 tracker links',
   assert.ok(pageContent.includes('PillarsBento'), 'page.tsx should import/render PillarsBento');
   assert.ok(pageContent.includes('InteractiveDemo'), 'page.tsx should import/render InteractiveDemo');
 });
+
+test('Verification: Legacy web-app component folders are removed from src/components', () => {
+  const legacyComponentDirs = ['dashboard', 'layout', 'log', 'profile', 'shop', 'workout'];
+  for (const dir of legacyComponentDirs) {
+    assert.strictEqual(
+      fs.existsSync(path.join(componentsDir, dir)),
+      false,
+      `Legacy web-app component directory "${dir}" should be removed`
+    );
+  }
+});
+
+test('Verification: PhoneMockup includes AI Scanner, Recipe Chef, BLE Scale Simulator, and Opt-in Party button', () => {
+  const mockupContent = fs.readFileSync(path.join(componentsDir, 'PhoneMockup.tsx'), 'utf-8');
+  assert.ok(mockupContent.includes('วันนี้ทำอะไรกินดี'), 'PhoneMockup must showcase the AI Recipe Chef');
+  assert.ok(mockupContent.includes('ชวนเพื่อนตั้งตี้'), 'PhoneMockup must showcase the opt-in Party Quest button');
+});
+

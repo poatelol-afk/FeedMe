@@ -6,9 +6,10 @@ type TabKey = 'home' | 'kitchen' | 'workout' | 'league';
 
 export default function PhoneMockup() {
   const [activeTab, setActiveTab] = useState<TabKey>('home');
-  const [kitchenMode, setKitchenMode] = useState<'ai' | 'scale'>('ai');
+  const [kitchenMode, setKitchenMode] = useState<'ai' | 'chef' | 'scale'>('ai');
   const [workoutMode, setWorkoutMode] = useState<'run' | 'lift'>('run');
   const [scaleWeight, setScaleWeight] = useState(185);
+  const [partyJoined, setPartyJoined] = useState(false);
 
   return (
     <div className="relative mx-auto w-full max-w-[340px] sm:max-w-[370px]">
@@ -129,14 +130,22 @@ export default function PhoneMockup() {
             {activeTab === 'kitchen' && (
               <div className="space-y-3 animate-fade-in">
                 {/* Mode Selector */}
-                <div className="flex rounded-xl bg-[#1A282F] p-1 border border-white/10 text-xs font-bold">
+                <div className="flex rounded-xl bg-[#1A282F] p-1 border border-white/10 text-[11px] font-bold">
                   <button
                     onClick={() => setKitchenMode('ai')}
                     className={`flex-1 py-1.5 rounded-lg transition-all ${
                       kitchenMode === 'ai' ? 'bg-[#58CC02] text-white shadow' : 'text-slate-400'
                     }`}
                   >
-                    📸 ถ่ายรูป AI
+                    📸 ถ่าย AI
+                  </button>
+                  <button
+                    onClick={() => setKitchenMode('chef')}
+                    className={`flex-1 py-1.5 rounded-lg transition-all ${
+                      kitchenMode === 'chef' ? 'bg-[#CE82FF] text-white shadow' : 'text-slate-400'
+                    }`}
+                  >
+                    👨‍🍳 วันนี้ทำอะไรกินดี
                   </button>
                   <button
                     onClick={() => setKitchenMode('scale')}
@@ -148,7 +157,7 @@ export default function PhoneMockup() {
                   </button>
                 </div>
 
-                {kitchenMode === 'ai' ? (
+                {kitchenMode === 'ai' && (
                   <div className="rounded-2xl p-4 bg-[#1A282F] border-2 border-[#2A3E47] space-y-3 text-center">
                     <div className="relative h-32 rounded-xl overflow-hidden bg-slate-900 border border-white/10 flex items-center justify-center">
                       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#58CC02]/20 to-transparent animate-pulse" />
@@ -176,7 +185,49 @@ export default function PhoneMockup() {
                       </div>
                     </div>
                   </div>
-                ) : (
+                )}
+
+                {kitchenMode === 'chef' && (
+                  <div className="rounded-2xl p-3.5 bg-[#1A282F] border-2 border-[#CE82FF]/40 space-y-2.5">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-black text-[#CE82FF]">👨‍🍳 AI Recipe Chef</span>
+                      <span className="text-[10px] bg-[#CE82FF]/20 text-purple-300 px-2 py-0.5 rounded-full font-bold">
+                        โควต้าเหลือ 650 kcal
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-300">
+                      เมนูแนะนำจากของในตู้เย็น & คุมแคลอรี่เป๊ะ:
+                    </div>
+                    <div className="space-y-1.5 text-xs">
+                      <div className="p-2 rounded-xl bg-[#131F24] border border-[#CE82FF]/30 flex justify-between items-center">
+                        <div>
+                          <div className="font-bold text-white">🍗 อกไก่ย่างสมุนไพรจิ้มแจ่ว</div>
+                          <div className="text-[10px] text-slate-400">380 kcal · โปรตีน 42g</div>
+                        </div>
+                        <span className="text-[10px] font-bold text-[#58CC02] bg-[#58CC02]/10 px-1.5 py-0.5 rounded">
+                          เข้าตู้เย็น
+                        </span>
+                      </div>
+                      <div className="p-2 rounded-xl bg-[#131F24] border border-white/5 flex justify-between items-center">
+                        <div>
+                          <div className="font-bold text-white">🍳 ไข่ตุ๋นกุ้งคลีนทรงเครื่อง</div>
+                          <div className="text-[10px] text-slate-400">210 kcal · โปรตีน 22g</div>
+                        </div>
+                        <span className="text-[10px] font-bold text-[#58CC02] bg-[#58CC02]/10 px-1.5 py-0.5 rounded">
+                          แนะนำ
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setKitchenMode('scale')}
+                      className="w-full py-1.5 rounded-lg bg-[#CE82FF] text-white text-[11px] font-bold shadow hover:brightness-110 active:scale-98"
+                    >
+                      เลือกเมนูนี้แล้วปรุงด้วยตาชั่ง ⚖️
+                    </button>
+                  </div>
+                )}
+
+                {kitchenMode === 'scale' && (
                   <div className="rounded-2xl p-4 bg-[#1A282F] border-2 border-[#2A3E47] space-y-3">
                     <div className="flex items-center justify-between text-[11px] text-[#1CB0F6] font-bold">
                       <span>⚡ BLE Connected: FeedMe Scale</span>
@@ -214,6 +265,7 @@ export default function PhoneMockup() {
                     </div>
                   </div>
                 )}
+
               </div>
             )}
 
@@ -332,15 +384,31 @@ export default function PhoneMockup() {
                     </div>
                   </div>
 
-                  {/* Boss Raid Party Badge */}
-                  <div className="mt-3 p-2.5 rounded-xl bg-gradient-to-r from-purple-900/40 to-pink-900/40 border border-purple-500/40 text-left text-xs">
-                    <div className="font-black text-purple-300 flex items-center gap-1">
-                      <span>👾 บอสไขมันทรานส์ (Co-op Raid)</span>
+                  {/* Boss Raid Party Badge with Opt-in Button */}
+                  <div className="mt-3 p-2.5 rounded-xl bg-gradient-to-r from-purple-900/40 to-pink-900/40 border border-purple-500/40 text-left text-xs space-y-2">
+                    <div className="flex justify-between items-center">
+                      <div className="font-black text-purple-300 flex items-center gap-1">
+                        <span>👾 บอสไขมันทรานส์ (Co-op Raid)</span>
+                      </div>
+                      <span className="text-[10px] bg-purple-500/30 text-purple-200 px-1.5 py-0.5 rounded font-bold">
+                        {partyJoined ? 'เข้าร่วมแล้ว ✓' : 'เปิดรับตี้'}
+                      </span>
                     </div>
-                    <div className="text-[10px] text-slate-300 mt-0.5">
-                      รวมพลังแก๊ง 4 คน เผาผลาญ: 7,850 / 10,000 kcal
+                    <div className="text-[10px] text-slate-300">
+                      รวมพลังแก๊ง 4 คน เผาผลาญ: {partyJoined ? '8,370' : '7,850'} / 10,000 kcal
                     </div>
+                    <button
+                      onClick={() => setPartyJoined(!partyJoined)}
+                      className={`w-full py-1.5 rounded-lg text-[11px] font-black transition-all ${
+                        partyJoined
+                          ? 'bg-purple-800 text-purple-200 border border-purple-400/40'
+                          : 'bg-[#58CC02] text-white shadow border-b-2 border-[#46A302] hover:brightness-110 active:scale-98'
+                      }`}
+                    >
+                      {partyJoined ? '✓ อยู่ในปาร์ตี้ (แก๊งหมูกระทะ)' : '+ ชวนเพื่อนตั้งตี้'}
+                    </button>
                   </div>
+
                 </div>
               </div>
             )}

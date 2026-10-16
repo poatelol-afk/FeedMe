@@ -1,12 +1,17 @@
 // ═══════════════════════════════════════════════════════
-//  Next.js 16 Proxy — session refresh + route protection
-//  (renamed from middleware.ts → proxy.ts in Next.js 16)
+//  Next.js 16 Proxy — promotional showcase redirector
 // ═══════════════════════════════════════════════════════
-import { type NextRequest } from 'next/server';
-import { updateSession } from '@/lib/supabase/middleware';
+import { NextResponse, type NextRequest } from 'next/server';
 
-export async function proxy(request: NextRequest) {
-  return await updateSession(request);
+export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const legacyPrefixes = ['/dashboard', '/log', '/profile', '/shop', '/workout', '/auth', '/api'];
+  if (legacyPrefixes.some((p) => pathname.startsWith(p))) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/';
+    return NextResponse.redirect(url);
+  }
+  return NextResponse.next();
 }
 
 export const config = {
