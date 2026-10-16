@@ -38,6 +38,18 @@ class FeedMeColors {
   static const Color textPrimary = Color(0xFFFFFFFF);
   static const Color textSecondary = Color(0xFF94A3B8);
   static const Color textMuted = Color(0xFF64748B);
+
+  // Semantic & Screen Aliases (for cohesive cross-screen usage)
+  static const Color canvasDark = canvas;
+  static const Color surfaceCard = card;
+  static const Color surfaceCardStroke = cardBorder;
+  static const Color featherGreenDark = featherGreenShadow;
+  static const Color gemPurple = liftPurple;
+  static const Color streakOrange = cardioOrange;
+  static const Color cardioBlue = kitchenCyan;
+  static const Color flameRed = coralRed;
+  static const Color lightningYellow = leagueGold;
+  static const Color textLight = textPrimary;
 }
 
 class FeedMeTheme {
@@ -48,6 +60,11 @@ class FeedMeTheme {
       primaryColor: FeedMeColors.featherGreen,
       cardColor: FeedMeColors.card,
       fontFamily: 'Prompt', // Modern Thai/English friendly font
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: FeedMeColors.featherGreen,
+        selectionColor: FeedMeColors.featherGreen.withValues(alpha: 0.3),
+        selectionHandleColor: FeedMeColors.featherGreen,
+      ),
       colorScheme: const ColorScheme.dark(
         primary: FeedMeColors.featherGreen,
         secondary: FeedMeColors.kitchenCyan,

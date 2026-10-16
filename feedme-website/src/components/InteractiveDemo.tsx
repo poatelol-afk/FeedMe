@@ -53,16 +53,13 @@ export default function InteractiveDemo() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1A282F] border border-[#58CC02]/30 text-xs font-black uppercase tracking-wider text-[#58CC02]">
-            🎮 INTERACTIVE CALCULATOR
-          </div>
           <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
             ทดลองคำนวณสมดุล <br className="hidden sm:inline" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#58CC02] to-[#1CB0F6]">
+            <span className="text-[#58CC02]">
               Net Calories & XP สดๆ ได้ที่นี่
             </span>
           </h2>
-          <p className="text-slate-400 text-sm">
+          <p className="text-slate-300 text-sm">
             เลือกมื้ออาหารและการออกกำลังกาย เพื่อดูว่า FeedMe 2.0 แปลงไลฟ์สไตล์ของคุณให้กลายเป็นคะแนนและพลังงานที่ชัดเจนได้อย่างไร
           </p>
         </div>

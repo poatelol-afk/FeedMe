@@ -249,7 +249,7 @@ export default function PhoneMockup() {
                       </button>
                       <button
                         onClick={() => setScaleWeight(prev => prev + 50)}
-                        className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-[#1CB0F6] text-white shadow border-b-2 border-[#0284C7] active:scale-95"
+                        className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-[#1CB0F6] text-white shadow-[0_2px_0_#0284C7] active:shadow-none active:translate-y-0.5"
                       >
                         +50g อกไก่
                       </button>
@@ -385,12 +385,12 @@ export default function PhoneMockup() {
                   </div>
 
                   {/* Boss Raid Party Badge with Opt-in Button */}
-                  <div className="mt-3 p-2.5 rounded-xl bg-gradient-to-r from-purple-900/40 to-pink-900/40 border border-purple-500/40 text-left text-xs space-y-2">
+                  <div className="mt-3 p-2.5 rounded-xl bg-[#162329] border border-[#2B3E47] text-left text-xs space-y-2">
                     <div className="flex justify-between items-center">
-                      <div className="font-black text-purple-300 flex items-center gap-1">
+                      <div className="font-black text-[#CE82FF] flex items-center gap-1">
                         <span>👾 บอสไขมันทรานส์ (Co-op Raid)</span>
                       </div>
-                      <span className="text-[10px] bg-purple-500/30 text-purple-200 px-1.5 py-0.5 rounded font-bold">
+                      <span className="text-[10px] bg-[#CE82FF]/20 text-[#CE82FF] border border-[#CE82FF]/30 px-1.5 py-0.5 rounded font-bold">
                         {partyJoined ? 'เข้าร่วมแล้ว ✓' : 'เปิดรับตี้'}
                       </span>
                     </div>
@@ -401,8 +401,8 @@ export default function PhoneMockup() {
                       onClick={() => setPartyJoined(!partyJoined)}
                       className={`w-full py-1.5 rounded-lg text-[11px] font-black transition-all ${
                         partyJoined
-                          ? 'bg-purple-800 text-purple-200 border border-purple-400/40'
-                          : 'bg-[#58CC02] text-white shadow border-b-2 border-[#46A302] hover:brightness-110 active:scale-98'
+                          ? 'bg-[#263A42] text-slate-200 border border-slate-600'
+                          : 'bg-[#58CC02] text-white shadow-[0_2px_0_#46A302] hover:brightness-110 active:shadow-none active:translate-y-0.5'
                       }`}
                     >
                       {partyJoined ? '✓ อยู่ในปาร์ตี้ (แก๊งหมูกระทะ)' : '+ ชวนเพื่อนตั้งตี้'}

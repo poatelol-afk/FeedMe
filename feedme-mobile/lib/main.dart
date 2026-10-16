@@ -73,7 +73,10 @@ class _FeedMeMainShellState extends State<FeedMeMainShell> {
           body: IndexedStack(
             index: _currentIndex,
             children: [
-              HomeScreen(controller: controller),
+              HomeScreen(
+                controller: controller,
+                onSwitchTab: (index) => setState(() => _currentIndex = index),
+              ),
               KitchenScreen(controller: controller),
               WorkoutScreen(controller: controller),
               LeagueScreen(controller: controller),

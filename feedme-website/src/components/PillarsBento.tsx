@@ -6,29 +6,26 @@ export default function PillarsBento() {
   return (
     <section id="features" className="py-20 bg-[#0B1317] border-y border-white/5 relative">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Heading */}
+        {/* Section Heading (No eyebrow kicker, solid high-contrast lettering) */}
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1A282F] border border-[#1CB0F6]/30 text-xs font-black uppercase tracking-wider text-[#1CB0F6]">
-            ✨ THE 3 PILLARS OF FEEDME 2.0
-          </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
             3 เสาหลักที่จะเปลี่ยนการดูแลตัวเอง <br className="hidden sm:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#58CC02] via-[#1CB0F6] to-[#CE82FF]">
+            <span className="text-[#58CC02]">
               จากภาระน่าเบื่อ สู่เกมที่หยุดเล่นไม่ได้
             </span>
           </h2>
-          <p className="text-slate-400 text-sm sm:text-base">
+          <p className="text-slate-300 text-sm sm:text-base">
             หมดยุคการจดแคลลงตาราง Excel หรือออกกำลังกายอย่างโดดเดี่ยว นี่คืออีโคซิสเต็มที่ออกแบบมาเพื่อผลลัพธ์จริงและความสนุกทุกวัน
           </p>
         </div>
 
         {/* Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          {/* PILLAR 1: SMART KITCHEN & BLE SCALE (Col span 12 or 7) */}
+          {/* PILLAR 1: SMART KITCHEN & BLE SCALE */}
           <div className="md:col-span-12 lg:col-span-7 rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-[#162329] to-[#0F171B] border-2 border-[#233842] hover:border-[#1CB0F6]/50 transition-all shadow-xl space-y-6">
             <div className="flex items-center justify-between">
               <span className="text-xs font-black px-3 py-1 rounded-full bg-[#1CB0F6]/20 text-[#1CB0F6] border border-[#1CB0F6]/40 uppercase tracking-wide">
-                🍳 เสาหลักที่ 1: Smart Kitchen & BLE Scale
+                Smart Kitchen & BLE Scale
               </span>
               <span className="text-2xl">📸 ⚖️</span>
             </div>
@@ -70,11 +67,11 @@ export default function PillarsBento() {
             </div>
           </div>
 
-          {/* PILLAR 2: RUN & LIFT (Col span 12 or 5) */}
+          {/* PILLAR 2: RUN & LIFT */}
           <div className="md:col-span-12 lg:col-span-5 rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-[#1E2529] to-[#12181C] border-2 border-[#2F3D45] hover:border-[#FF9600]/50 transition-all shadow-xl space-y-6">
             <div className="flex items-center justify-between">
               <span className="text-xs font-black px-3 py-1 rounded-full bg-[#FF9600]/20 text-[#FF9600] border border-[#FF9600]/40 uppercase tracking-wide">
-                🏃 เสาหลักที่ 2: Run & Lift
+                Run & Lift
               </span>
               <span className="text-2xl">🔥 🏋️</span>
             </div>
@@ -111,13 +108,13 @@ export default function PillarsBento() {
             </div>
           </div>
 
-          {/* PILLAR 3: DUOLINGO-STYLE LEAGUES & PARTY QUESTS (Full Width 12 Cols) */}
+          {/* PILLAR 3: DUOLINGO-STYLE LEAGUES & PARTY QUESTS */}
           <div className="md:col-span-12 rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-[#1B271F] via-[#142018] to-[#0E1712] border-2 border-[#25422D] hover:border-[#58CC02]/50 transition-all shadow-xl">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
               <div className="lg:col-span-7 space-y-4">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-black px-3 py-1 rounded-full bg-[#58CC02]/20 text-[#58CC02] border border-[#58CC02]/40 uppercase tracking-wide">
-                    🏆 เสาหลักที่ 3: Duolingo Gamification & Co-op
+                    Duolingo Gamification & Co-op
                   </span>
                   <span className="text-sm font-bold text-[#FFC800]">🔥 ไฟไม่เคยดับ</span>
                 </div>
