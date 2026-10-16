@@ -319,15 +319,15 @@ git commit -m "feat(mobile): implement Home Net Calorie dashboard and Smart Kitc
     1. **Weekly Duolingo League Leaderboard:** Emerald League tier banner, Promotion Zone (Top 3 highlighted in green), Demotion Zone warning, and dynamic sorting as the user earns XP.
     2. **Opt-In Friend Quests / Party Boss Raid:** Toggle button (`+ ชวนเพื่อนตั้งตี้ / เข้าร่วมอีเวนต์` vs `ออกจากปาร์ตี้ชั่วคราว`), Boss HP progress bar (`แก๊งหมูกระทะ vs. บอสไขมันทรานส์`), and 1-tap Friend Activity Feed sticker reactions (`🔥 เชียร์`, `👏 สุดยอด`, `👀 แอบกินไรน่ะ`).
 
-- [ ] **Step 1: Implement `WorkoutScreen` in `feedme-mobile/lib/features/workout/workout_screen.dart`**
+- [x] **Step 1: Implement `WorkoutScreen` in `feedme-mobile/lib/features/workout/workout_screen.dart`**
 
 Build the Strava-inspired GPS Run view (with `GpsRouteMapPainter` custom canvas and interactive run simulator) and the Weight Training program & set logger view.
 
-- [ ] **Step 2: Implement `LeagueScreen` in `feedme-mobile/lib/features/league/league_screen.dart`**
+- [x] **Step 2: Implement `LeagueScreen` in `feedme-mobile/lib/features/league/league_screen.dart`**
 
 Build the Weekly XP League leaderboard and the opt-in Party Boss Raid + Friend Sticker Feed.
 
-- [ ] **Step 3: Commit Workout and League screens**
+- [x] **Step 3: Commit Workout and League screens**
 
 ```bash
 git add feedme-mobile/lib/features/workout feedme-mobile/lib/features/league
@@ -349,11 +349,11 @@ git commit -m "feat(mobile): implement Run & Lift workout screen and League & Pa
   - `ProfileScreen({required FeedMeController controller})` featuring Avatar & Level badge, Streak Freeze (`❄️`) status, Reward Gem Shop (`❄️ Streak Freeze`, `🍔 บัตรตามใจปาก Cheat Meal Pass +500 kcal`, `⚡ Double XP Potion`), and Hardware BLE Scale simulator connection toggle.
   - `FeedMeApp` in `lib/main.dart` with top status header (`🔥 Streak`, `💎 Gems`, `⚡ XP`) and 5-tab Duolingo-style bottom navigation bar (`หน้าแรก`, `ครัว AI`, `ออกกำลัง`, `ลีกเพื่อน`, `โปรไฟล์`).
 
-- [ ] **Step 1: Implement `ProfileScreen` in `feedme-mobile/lib/features/profile/profile_screen.dart` and `FeedMeApp` in `feedme-mobile/lib/main.dart`**
+- [x] **Step 1: Implement `ProfileScreen` in `feedme-mobile/lib/features/profile/profile_screen.dart` and `FeedMeApp` in `feedme-mobile/lib/main.dart`**
 
 Wire all 5 screens into `FeedMeApp` using an `IndexedStack` so switching tabs preserves state seamlessly, with a persistent gamified top bar and bottom navigation bar.
 
-- [ ] **Step 2: Write widget smoke test in `feedme-mobile/test/widget_test.dart`**
+- [x] **Step 2: Write widget smoke test in `feedme-mobile/test/widget_test.dart`**
 
 ```dart
 import 'package:flutter_test/flutter_test.dart';
@@ -372,12 +372,12 @@ void main() {
 }
 ```
 
-- [ ] **Step 3: Run full repository verification (Website tests, TypeScript check, and Monorepo Structure check)**
+- [x] **Step 3: Run full repository verification (Website tests, TypeScript check, and Monorepo Structure check)**
 
 Run: `npm --prefix feedme-website test && npm --prefix feedme-website run typecheck`
 Expected: PASS with 0 errors.
 
-- [ ] **Step 4: Commit Profile screen, `main.dart`, and widget tests**
+- [x] **Step 4: Commit Profile screen, `main.dart`, and widget tests**
 
 ```bash
 git add feedme-mobile
