@@ -81,3 +81,30 @@ test('FeedMe Mobile Task 3 Controller & Kitchen Service Verification', async (t)
   });
 });
 
+test('FeedMe Mobile Task 4 Home and Kitchen Screen Verification', async (t) => {
+  await t.test('home_screen.dart exists with Net Calorie card and daily quests', () => {
+    const homePath = path.join(mobileDir, 'lib/features/home/home_screen.dart');
+    assert.strictEqual(fs.existsSync(homePath), true, 'home_screen.dart must exist');
+    const content = fs.readFileSync(homePath, 'utf-8');
+
+    assert.ok(content.includes('class HomeScreen'), 'Must define HomeScreen');
+    assert.ok(content.includes('สมดุลพลังงาน'), 'Must display Net Calories title');
+    assert.ok(content.includes('controller.calorieStatusMessage'), 'Must display playful coaching message');
+    assert.ok(content.includes('controller.remainingQuota'), 'Must display remaining quota');
+  });
+
+  await t.test('kitchen_screen.dart exists with AI scanner, Recipe Chef, and Scale simulator', () => {
+    const kitchenPath = path.join(mobileDir, 'lib/features/kitchen/kitchen_screen.dart');
+    assert.strictEqual(fs.existsSync(kitchenPath), true, 'kitchen_screen.dart must exist');
+    const content = fs.readFileSync(kitchenPath, 'utf-8');
+
+    assert.ok(content.includes('class KitchenScreen'), 'Must define KitchenScreen');
+    assert.ok(content.includes('สแกนอาหาร AI'), 'Must include AI Food scanner mode');
+    assert.ok(content.includes('วันนี้ทำอะไรกินดี'), 'Must include AI Chef mode');
+    assert.ok(content.includes('ตาชั่งวัตถุดิบ BLE'), 'Must include BLE Scale mode');
+    assert.ok(content.includes('controller.tareScale'), 'Must wire tareScale');
+    assert.ok(content.includes('controller.sendScaleWeightToBowl'), 'Must wire sendScaleWeightToBowl');
+  });
+});
+
+
